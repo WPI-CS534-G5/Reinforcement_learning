@@ -1,14 +1,15 @@
-
 from random import randint
+
 
 class Node:
     def __init__(self, x, y, state, reward):
         self.x = x
         self.y = y
         self.state = state
-        self.action = randint(1,4)
-        self.reward = -0.1+reward
-        if (reward>0):
+        self.action = randint(1, 4)
+        self.reward = -0.1 + reward
+
+        if reward > 0:
             self.p_value = 2
         else:
             self.p_value = -2
