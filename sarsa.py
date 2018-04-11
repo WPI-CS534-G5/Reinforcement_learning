@@ -1,6 +1,6 @@
 from node import Node
 from random import randrange
-
+from sys import argv
 
 state_rep = {9: {'SYM': 'P', 'STATE': 'PIT'},
              1: {'SYM': 'G', 'STATE': 'GOAL'},
@@ -24,12 +24,12 @@ def set_flag(m, row, col, flag_val):
 def get_rand_position(m, num_rows, num_cols):
     rand_row = randrange(0, num_rows)
     rand_col = randrange(0, num_cols)
-    state = m[rand_row][rand_col]
+    state = m[rand_row][rand_col].get_state()
 
     if (state == 1) or (state == 9):
         return get_rand_position(m, num_rows, num_cols)
 
-    return [rand_row, rand_col]
+    return [rand_col , rand_row]
 
 
 def init_map(state_map, goal_reward, pit_reward):
@@ -63,7 +63,67 @@ def print_map(node_map):
         print()
 
 
+# Decides to move or not based on epsilon
+def decide_to_move(epsilon):
+    pred = epsilon*100
+    rand = randrange(1, 100)
+    if(rand > pred):
+        return 1
+    else:
+        return -1
+
+# Checks if the node at x,y exists
+def can_move(x,y):
+    if((x < 0) or (y < 0) or (x > 6) or (x > 5)):
+        return 0
+    else:
+        return 1
+
+#Returns all the neighbors of a node
+def get_neighbors(x,y, map):
+    neighbors = []
+    if(can_move(x,y+1)):
+        neighbors.append(map[x,y+1])
+    if(can_move(x,y-1)):
+        neighbors.append(map[x,y-1])
+    if(can_move(x-1,y)):
+        neighbors.append(map[x-1,y])
+    if(can_move(x+1,y)):
+        neighbors.append(map[x+1,y])
+    return neighbors
+
+
+#Move function, it is not deterministic
+def move(x1,y1,x2,y2,map):
+
+    pred = epsilon*100
+    rand = randrange(1, 100)
+
+    if
+
+
+
+
 if __name__ == "__main__":
+
+    goal_reward = argv[1]
+    pit_reward = argv[2]
+    move_cost = argv[3]
+    giveup_cost = argv[4]
+    trials = argv[5]
+    epsilon = argv[6]
+
+    # The learning rate determines to what extent newly acquired information overrides old information.
+    # A factor of 0 will make the agent not learn anything, while a factor of 1 would make
+    #  the agent consider only the most recent information.
+    learning_rate = 0.5
+
+    # The discount factor determines the importance of future rewards. A factor
+    # of 0 makes the agent "opportunistic" by only considering current rewards,
+    # while a factor approaching 1 will make it strive for a long-term high reward.
+    # If the discount factor meets or exceeds 1, the Q values may diverge.
+    discount_factor = 0.5
+
     state_map = [[0, 0, 0, 0, 0, 0, 0],
                  [0, 0, 0, 0, 0, 0, 0],
                  [0, 0, 9, 9, 0, 0, 0],
@@ -71,11 +131,33 @@ if __name__ == "__main__":
                  [0, 0, 9, 9, 9, 0, 0],
                  [0, 0, 0, 0, 0, 0, 0]]
 
-    rand_pos = get_rand_position(state_map, 6, 7)
-    reward_map = init_map(state_map, 5, -2)
+    num_rows = 6
+    num_cols = 7
 
-    print("Random Y:", rand_pos[0])
-    print("Random X:", rand_pos[1])
+    # Initialize the map
+    reward_map = init_map(state_map, goal_reward, pit_reward)
 
-    set_flag(state_map, rand_pos[0], rand_pos[1], "#")
+    #for all the trials
+    for x in range(0, trials):
+
+        # get a random possition
+        curr_pos = get_rand_position(reward_map, 6, 7)
+        # while your current possition is not on a terminating state
+        while(reward_map[curr_pos[0]][curr_pos[1]].get_state() != 1):
+            #Takes an epsilon probability that it wont move
+            if (decide_to_move(epsilon)<0):
+                continue
+            #Get all the neighbors of the current possition
+            neighbors = get_neighbors(curr_pos[0],curr_pos[1],reward_map)
+            #Get the neighbor with the highest q value
+            max_coordinates = [curr_pos[0]+1,[curr_pos[1]]
+            max_q_value = q_function(reward_map[curr_pos[0]][curr_pos[1]].get_p_value(), reward_map[curr_pos[0]+1][curr_pos[1]].get_p_value(), reward_map[curr_pos[0]+1][curr_pos[1]].get_reward(), learning_rate, discount_factor)
+            for n in neighbors:
+                if ( q_function(reward_map[curr_pos[0]][curr_pos[1]].get_p_value(), n.get_p_value,n.get_reward,  learning_rate, discount_factor) > max_q_value):
+                    max_q_value = q_function(reward_map[curr_pos[0]][curr_pos[1]].get_p_value(), n.get_p_value,n.get_reward,  learning_rate, discount_factor)
+                    max_coordinates[0] = n.get_x()
+                    max_coordinates[1] = n.get_y()
+            move()
+            update()
+
     print_map(reward_map)
