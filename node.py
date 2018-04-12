@@ -1,5 +1,5 @@
-from random import randint
-from grid import Point
+import grid as gd
+from random import randrange
 
 
 class Node:
@@ -7,13 +7,15 @@ class Node:
         self.row_i = row_i
         self.col_i = col_i
         self.state = state
-        self.action = randint(1, 4)
-        self.reward = -0.1 + reward
+        self.action = ['U', 'D', 'L', 'R'][randrange(4)]
+        self.reward = reward
 
         if reward > 0:
-            self.p_value = 2
+            self.q_value = 2
         else:
-            self.p_value = -2
+            self.q_value = -2
+
+        self.directions = {'U': 0, 'D': 1, 'L': 2, 'R': 3}
 
     def get_row(self):
         return self.row_i
@@ -25,7 +27,7 @@ class Node:
         return self.row_i, self.col_i
 
     def get_point(self):
-        return Point(self.row_i, self.col_i)
+        return gd.Point(self.row_i, self.col_i)
 
     def get_state(self):
         return self.state
@@ -36,11 +38,11 @@ class Node:
     def get_reward(self):
         return self.reward
 
-    def get_p_value(self):
-        return self.p_value
+    def get_q_value(self):
+        return self.q_value
 
     def update_action(self, act):
         self.action = act
 
-    def update_p_value(self, p):
-        self.p_value = p
+    def update_q_value(self, p):
+        self.q_value = p

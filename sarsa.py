@@ -19,26 +19,31 @@ def take_random_move(epsilon):
 
 # Move function, it is not deterministic
 def move(grid, current_node, new_node):
+    # Get of new node from current node
     new_point = new_node.get_point()  # type: Point
     current_point = current_node.get_point()  # type: Point
     direction = current_point.get_direction(new_point)
 
-    decision = random()
-    if decision <= 0.7:  # Move ocurrs as expected: [0, 0.7]
+    # Update Action
+    current_node.update_action(direction)
+
+    # MOVE
+    prob = random()
+    # Move occurs as expected: [0, 0.7]
+    if prob <= 0.7:
         current_point = new_point
-    elif decision <= 0.8:  # Moves 90-degrees right: (0.7, 0.8]
+    # Moves 90-degrees right: (0.7, 0.8]
+    elif prob <= 0.8:
         direction = n_right[direction]
         grid.move(current_point, direction)
-    elif decision <= 0.9:  # Moves 90-degrees left: (0.8, 0.9]
+    # Moves 90-degrees left: (0.8, 0.9]
+    elif prob <= 0.9:
         direction = n_left[direction]
         grid.move(current_point, direction)
-    else:  # Moves double: (0.9, 1]
+    # Moves double: (0.9, 1]
+    else:
         grid.move(current_point, direction)
         grid.move(current_point, direction)
 
     return grid.get_node(current_point)
 
-
-# something, something, update
-def update():
-    return

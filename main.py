@@ -14,7 +14,7 @@ goal_reward = 5
 pit_reward = -2
 move_cost = -0.1
 giveup_cost = -3
-num_iterations = 1
+num_iterations = 10000
 epsilon = 0.1
 
 p = 'P'
@@ -43,7 +43,8 @@ discount_factor = 0.5
 # Initialize the map
 grid = gd.Grid(state_map, goal_reward, pit_reward)
 
-
+# Todo: figure out difference between reward and q-value
+# Todo: figure out where to update the q-value of the nodes
 for iteration in range(num_iterations):
 
     # Get a random position
@@ -51,13 +52,13 @@ for iteration in range(num_iterations):
     current_node = grid.get_node(current_point)  # type: node.Node
 
     # While your current position is not on a terminating state
-    while current_node.get_state() is not 'G':
+    while (current_node.get_state() is not 'G') and (current_node.get_state() is not 'P'):
         # Get all the neighbors of the current position
-        neighbors = grid.get_neighbors(current_point)
+        neighbors = grid.get_neighbors(current_node)
 
         # Probability of taking random move
         if sarsa.take_random_move(epsilon):
-            new_node = randrange(len(neighbors))
+            new_node = neighbors[randrange(len(neighbors))]
             current_node = sarsa.move(grid, current_node, new_node)
             continue
 
@@ -65,10 +66,10 @@ for iteration in range(num_iterations):
         best_node = None
         max_q_value = None
         for new_node in neighbors:
-            current_p_value = current_node.get_p_value()
-            future_p_value = new_node.get_p_value()
+            current_q_value = current_node.get_q_value()
+            future_q_value = new_node.get_q_value()
             future_reward = new_node.get_reward()
-            new_q_value = sarsa.q_function(current_p_value, future_p_value, future_reward,
+            new_q_value = sarsa.q_function(current_q_value, future_q_value, future_reward,
                                            learning_rate, discount_factor)
 
             if max_q_value is None or new_q_value > max_q_value:
@@ -76,4 +77,8 @@ for iteration in range(num_iterations):
                 best_node = new_node
 
         current_node = sarsa.move(grid, current_node, best_node)
-        sarsa.update()
+
+# See the resulting board
+gd.print_grid(grid)
+
+
