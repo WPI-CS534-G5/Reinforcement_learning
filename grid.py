@@ -8,34 +8,26 @@ class Point(object):
         self.row_i = row_i
         self.col_i = col_i
 
-    # Mutate Point
-    def move_up(self): self.row_i -= 1
+    def move(self, action):
+        if action == 'U':
+            self.row_i -= 1
+            return True
+        elif action == 'D':
+            self.row_i += 1
+            return True
+        elif action == 'L':
+            self.col_i -= 1
+            return True
+        elif action == 'R':
+            self.col_i += 1
+            return True
 
-    def move_down(self): self.row_i += 1
+        print('point.move({move}) returned False'.format(move=action))
+        return False
 
-    def move_left(self): self.col_i -= 1
-
-    def move_right(self): self.col_i += 1
-
-    # Return new Point
-    def get_move_up(self):
+    def get_move(self, action):
         p = Point(self.row_i, self.col_i)
-        p.move_up()
-        return p
-
-    def get_move_down(self):
-        p = Point(self.row_i, self.col_i)
-        p.move_down()
-        return p
-
-    def get_move_left(self):
-        p = Point(self.row_i, self.col_i)
-        p.move_left()
-        return p
-
-    def get_move_right(self):
-        p = Point(self.row_i, self.col_i)
-        p.move_right()
+        p.move(action)
         return p
 
     # Get direction from self to new point
@@ -52,7 +44,7 @@ class Point(object):
         elif col_diff > 0:
             return 'U'
 
-        print('get_direction() returning False. This shouldnt be happening?')
+        print('get_direction({point.row_i},{point.col_i}) returning False'.format(point=point))
         return False
 
 
@@ -99,57 +91,26 @@ class Grid(object):
         return self.grid[rand_row][rand_col]
 
     # Check if move exists
-    def up_exists(self, point): return point.get_move_up().row_i >= 0
+    def move_exists(self, point, action):
+        new_point = point.get_move(action)
 
-    def down_exists(self, point): return point.get_move_down().row_i < self.num_rows
-
-    def right_exists(self, point): return point.get_move_right().col_i < self.num_cols
-
-    def left_exists(self, point): return point.get_move_left().col_i >= 0
-
-    def move_exists(self, point, direction):
-        actions = ['U', 'D', 'L', 'R']
-        methods = [self.up_exists, self.down_exists, self.left_exists, self.right_exists]
-        for action, method in zip(actions, methods):
-            if direction == action:
-                return method(point)
-        return False
-
-    # Check if move exists and move
-    def move_up(self, point):
-        if self.up_exists(point):
-            return point.move_up()
-        return point
-
-    def move_down(self, point):
-        if self.down_exists(point):
-            return point.move_down()
-        return point
-
-    def move_left(self, point):
-        if self.left_exists(point):
-            return point.move_left()
-        return point
-
-    def move_right(self, point):
-        if self.right_exists(point):
-            return point.move_right()
-        return point
-
-    # Move point based on input direction
-    def move_helper(self, point, action):
         if action == 'U':
-            self.move_up(point)
+            return new_point.row_i >= 0
         elif action == 'D':
-            self.move_down(point)
-        elif action == 'L':
-            self.move_left(point)
+            return new_point.row_i < self.num_rows
         elif action == 'R':
-            self.move_left(point)
+            return new_point.col_i < self.num_cols
+        elif action == 'L':
+            return new_point.col_i >= 0
+
+        print('move_exists({0}, {1}) returned False'.format(point, action))
+        return False
 
     def move(self, node, action):
         point = node.get_point()
-        self.move_helper(point, action)
+        if self.move_exists(point, action):
+            point.move(action)
+
         return self.get_node(point)
 
 

@@ -30,7 +30,6 @@ class Node(object):
         # What kind of state is this? (Goal, Pit, Regular)
         self.state = state
 
-        # Store Q-Value for every action
         # (U)p, (D)own, (L)eft, (R)ight, (X)Give-up
         self.q_values = dict()
 

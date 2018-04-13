@@ -73,7 +73,7 @@ def move(node, action):
 #   SARSA( ((Future State)) )
 #
 # Return ((Future Expected Reward)) and ((New Q-Value))
-def sarsa(node, alpha, gamma, depth=0):
+def sarsa(node, alpha, gamma):
     """
     :param node: Current State
     :type node: Node
@@ -86,8 +86,6 @@ def sarsa(node, alpha, gamma, depth=0):
     :return: newly calculated Q-Value
     :rtype: float
     """
-
-    print('depth: ', depth)
     # Check for terminating state
     if node.is_terminating():
         return node.get_reward()
@@ -105,7 +103,7 @@ def sarsa(node, alpha, gamma, depth=0):
 
     # Q-Value of Future State
     future_node = move(node, action)
-    future_q = sarsa(future_node, alpha, gamma, depth=depth+1)
+    future_q = sarsa(future_node, alpha, gamma)
 
     # Calculate new Q-Value
     new_q_value = old_q + alpha * (reward + gamma * future_q - old_q)
