@@ -82,7 +82,7 @@ class Grid(object):
                 elif state == 'G':
                     reward = self.goal_reward
 
-                new_row.append(Node(row_i, col_i, state))
+                new_row.append(Node(row_i, col_i, state, self))
             m.append(new_row)
         return m
 

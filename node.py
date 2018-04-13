@@ -3,9 +3,10 @@ from random import randrange
 
 
 class Node:
-    def __init__(self, row_i, col_i, state):
+    def __init__(self, row_i, col_i, state, grid):
 
-        # Positino in grid
+        # Grid and Position on it
+        self.grid = grid
         self.row_i = row_i
         self.col_i = col_i
 
@@ -20,20 +21,32 @@ class Node:
 
         # Store Q-Value for every action
         # Use this dict to access individual Q-Values
-        self.q_values = {'U': 0, 'D': 0,
-                         'L': 0, 'R': 0}
+        self.q_values = {'U': 2, 'D': 2,
+                         'L': 2, 'R': 2}
 
-    # Todo: Set action based on best Q-Value
-    def update_action(self, act):
+    def update_action(self):
+        self.action = self.get_action()
         return
 
-    # Todo: return best action based: Max(Q-Value)
     def get_action(self):
-        return self.action
+        actions = list(self.q_values.items())
+        actions.sort()
 
-    # Todo: update reward if it's better
+        best_action = actions.pop(0)
+        equal = [best_action]
+        for action in actions:
+            if action == best_action:
+                equal.append(action)
+
+        if len(actions) == 1:
+            return actions[0]
+        else:
+            r_i = randrange(0, len(actions))
+            return actions[r_i]
+
     def update_reward(self, new_reward):
-        return
+        if new_reward > self.reward:
+            self.reward = new_reward
 
     def get_q_value(self, action):
         return self.q_values[action]

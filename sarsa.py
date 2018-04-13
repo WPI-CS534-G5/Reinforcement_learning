@@ -18,12 +18,14 @@ def take_random_move(epsilon):
     return random() <= epsilon
 
 
-def get_move():
+def get_action():
     return
 
 
 # Move function, it is not deterministic
-def move(grid, current_node, new_node):
+def move(current_node, new_node):
+    grid = current_node.grid
+
     # Get of new node from current node
     new_point = new_node.get_point()  # type: Point
     current_point = current_node.get_point()  # type: Point
@@ -80,7 +82,7 @@ def move(grid, current_node, new_node):
 #
 # Input: current state, learning rate, discount rate
 # Output: (future expected reward, learning rate, discount rate)
-def sarsa(node,alpha, gamma):
+def sarsa(node, alpha, gamma):
     if node.is_terminating():
         return node.reward, 0  # reward and Q-Value
 
@@ -92,7 +94,7 @@ def sarsa(node,alpha, gamma):
     reward = node.reward
 
     # Q-Value of Future State
-    future_node = None  # Todo: get future node using Move()
+    future_node = move()  # Todo: get future node using Move()
     new_reward, future_q  = sarsa(future_node, alpha, gamma)
     new_reward = 0  # We'll also be getting a new reward value here
 
@@ -101,11 +103,3 @@ def sarsa(node,alpha, gamma):
     # Todo: update values in current node
 
     return new_reward, new_estimate
-
-
-def run_sarsa(giveup_cost, move_cost, epsilon, alpha, gamma):
-    # get random node and it's best action
-    # get move
-
-    # get node's best action (random if none)
-    return
