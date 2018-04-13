@@ -8,7 +8,7 @@ from node import Node
 # giveup_cost = argv[4]
 # trials = argv[5]
 # epsilon = argv[6]
-goal_reward = 5
+goal_reward = 10
 pit_reward = -2
 step_cost = -0.1
 giveup_cost = -3
@@ -46,6 +46,8 @@ for iteration in range(num_iterations):
     # Get a random position
     node = grid.get_rand_node()  # type: Node
     sarsa.sarsa(node, alpha, gamma)
+    gd.print_grid(grid)
+    print()
 
 # See the resulting board
 gd.print_grid(grid)

@@ -62,31 +62,41 @@ class Node(object):
         self.action = action
         return
 
+    # Todo: fix this shit-show of a function
     def get_action(self):
         # Check for terminating state
         if self.is_terminating():  # WE SHOULD NEVER HIT THIS!!
             print('Running get_action() from terminating state. THIS SHOULDNT BE HAPPENING')
             return self.state
-        if random() <= self.grid.epsilon:  # Check for random move
-            actions = list(self.q_values.items())
+
+        # Check for random move
+        if random() <= self.grid.epsilon:
+            actions = list(self.q_values.keys())
             r_i = randrange(0, len(actions))
             return actions[r_i]
 
+        # Get list of q-values
         actions = list(self.q_values.items())
         actions.sort()
 
-        best_action = actions.pop(0)
+        best = actions.pop(0)
+        best_action = best[0]
+        best_value = best[1]
+
+        # Find best move(s)
         equal = [best_action]
-        for action in actions:
-            if action == best_action:
+        for action, value in actions:
+            if value == best_value:
                 equal.append(action)
 
-        if len(actions) == 1:
-            best_action = actions[0]
+        # If >1 best moves, return random action
+        if len(equal) == 1:
+            best_action = equal[0][0]
         else:
-            r_i = randrange(0, len(actions))
-            best_action = actions[r_i]
+            r_i = randrange(0, len(equal))
+            best_action = equal[r_i][0]
 
+        # Update node's action
         self.action = best_action
         return best_action
 
