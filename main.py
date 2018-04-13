@@ -43,11 +43,12 @@ gamma = 0.5  # Discount Factor
 grid = gd.Grid(state_map, goal_reward, pit_reward, step_cost, giveup_cost, epsilon)
 
 for iteration in range(num_iterations):
-
     # Get a random position
-    current_point = grid.get_rand_node()  # type: Node
+    node = grid.get_rand_node()  # type: Node
+    sarsa.sarsa(node, alpha, gamma)
 
 # See the resulting board
 gd.print_grid(grid)
+# gd.print_grid(grid, view_reward=True)
 
 

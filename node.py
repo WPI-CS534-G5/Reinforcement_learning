@@ -28,23 +28,39 @@ class Node(object):
 
         # What kind of state is this? (Goal, Pit, Regular)
         self.state = state
-        if self.is_terminating():
-            self.action = state
 
         # Store Q-Value for every action
         # (U)p, (D)own, (L)eft, (R)ight, (X)Give-up
-        self.q_values = {'U': 2.0, 'D': 2.0, 'L': 2.0, 'R': 2.0, 'X': grid.giveup_cost}
+        self.q_values = dict()
+
+        self.init_node()
+        self.init_q_values()
+
+    def init_node(self):
+        # {'U': 2.0, 'D': 2.0, 'L': 2.0, 'R': 2.0, 'X': grid.giveup_cost}
+        if self.is_terminating():
+            self.action = self.state
+
+        point = self.get_point()
+        actions = ['L', 'R', 'U', 'D']
+        for action in actions:
+            if self.grid.move_exists(point, action):
+                self.q_values[action] = 2
+        self.q_values['X'] = self.grid.giveup_cost
 
     # Todo: come up with clever initialization (manhattan distance from goal/pit?)
     def init_q_values(self):
         return
 
+    def set_q_value(self, q_value, action):
+        self.q_values[action] = q_value
+
+    def get_q_value(self, action):
+        return self.q_values[action]
+
     def set_action(self, action):
         self.action = action
         return
-
-    def set_q_value(self, q_value, action):
-        self.q_values[action] = q_value
 
     def get_action(self):
         # Check for terminating state
@@ -74,12 +90,6 @@ class Node(object):
         self.action = best_action
         return best_action
 
-    def get_q_value(self, action):
-        return self.q_values[action]
-
-    def set_q_value(self, action):
-        return self.q_values[action]
-
     def get_point(self):
         return gd.Point(self.row_i, self.col_i)
 
@@ -97,3 +107,10 @@ class Node(object):
 
     def is_terminating(self):
         return self.state == 'G' or self.state == 'P'
+
+    def get_print_reward(self):
+        if self.is_terminating():
+            return ':^5'.format(self.state)
+
+        reward = self.get_q_value(self.action)
+        return '{:2.2f}'.format(reward)

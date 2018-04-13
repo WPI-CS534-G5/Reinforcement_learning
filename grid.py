@@ -69,9 +69,9 @@ class Grid(object):
         self.epsilon = epsilon
 
         # Grid-World Definition
+        self.num_rows = len(state_map)
+        self.num_cols = len(state_map[0])
         self.grid = self.init_from_map(state_map)
-        self.num_rows = len(self.grid)
-        self.num_cols = len(self.grid[0])
 
     # Initialize grid-world from state_map
     def init_from_map(self, matrix):
@@ -80,6 +80,7 @@ class Grid(object):
             new_row = list()
             for col_i, state in enumerate(row):
                 new_row.append(Node(self, row_i, col_i, state))
+
             m.append(new_row)
         return m
 
@@ -105,6 +106,14 @@ class Grid(object):
     def right_exists(self, point): return point.get_move_right().col_i < self.num_cols
 
     def left_exists(self, point): return point.get_move_left().col_i >= 0
+
+    def move_exists(self, point, direction):
+        actions = ['U', 'D', 'L', 'R']
+        methods = [self.up_exists, self.down_exists, self.left_exists, self.right_exists]
+        for action, method in zip(actions, methods):
+            if direction == action:
+                return method(point)
+        return False
 
     # Check if move exists and move
     def move_up(self, point):
@@ -162,12 +171,17 @@ class Grid(object):
 
 
 # Pretty-Print on command line
-# Todo: print Grid of Q-Values(rewards)
 def print_grid(grid, view_reward=False):
-    p = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': 'G', 'P': 'P'}
+    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': 'G', 'P': 'P'}
+
     for row in grid.grid:
         print('| ', end='')
         for node in row:
-            print(p[node.action], end='')
-            print(' | ', end='')
+            if view_reward:
+                p = node.get_print_reward()
+            else:
+                p = act[node.action]
+
+            print(p + ' | ', end='')
         print()
+
