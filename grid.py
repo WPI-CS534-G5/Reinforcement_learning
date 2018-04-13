@@ -2,6 +2,7 @@ from node import Node
 from random import randrange
 
 
+# Helper object for Grid Class
 class Point(object):
     def __init__(self, row_i, col_i):
         self.row_i = row_i
@@ -51,7 +52,7 @@ class Point(object):
         elif col_diff > 0:
             return 'U'
 
-        print(row_diff, col_diff)
+        print('get_direction() returning False. This shouldnt be happening?')
         return False
 
 
@@ -80,7 +81,6 @@ class Grid(object):
             new_row = list()
             for col_i, state in enumerate(row):
                 new_row.append(Node(self, row_i, col_i, state))
-
             m.append(new_row)
         return m
 
@@ -137,14 +137,14 @@ class Grid(object):
         return point
 
     # Move point based on input direction
-    def move_helper(self, point, direction):
-        if direction == 'U':
+    def move_helper(self, point, action):
+        if action == 'U':
             self.move_up(point)
-        elif direction == 'D':
+        elif action == 'D':
             self.move_down(point)
-        elif direction == 'L':
+        elif action == 'L':
             self.move_left(point)
-        elif direction == 'R':
+        elif action == 'R':
             self.move_left(point)
 
     def move(self, node, action):
@@ -152,36 +152,26 @@ class Grid(object):
         self.move_helper(point, action)
         return self.get_node(point)
 
-    # Given node, get neighbors
-    def get_neighbors(self, node):
-        nodes = list()
-        point = node.get_point()
-
-        if self.up_exists(point):
-            nodes.append(self.get_node(point.get_move_up()))
-        if self.down_exists(point):
-            nodes.append(self.get_node(point.get_move_down()))
-
-        if self.right_exists(point):
-            nodes.append(self.get_node(point.get_move_right()))
-        if self.left_exists(point):
-            nodes.append(self.get_node(point.get_move_left()))
-
-        return nodes
-
 
 # Pretty-Print on command line
 def print_grid(grid, view_reward=False):
-    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': 'G', 'P': 'P'}
+    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': 'G', 'P': 'P', 'X': 'X'}
 
-    for row in grid.grid:
-        print('| ', end='')
-        for node in row:
-            if view_reward:
-                p = node.get_print_reward()
-            else:
-                p = act[node.action]
+    if not view_reward:
+        print('|---+---+---+---+---+---+---|')
+        for row in grid.grid:
+            p = '| '
+            for node in row:
+                p += act[node.get_action()] + ' | '
+            print(p)
+            print('|---+---+---+---+---+---+---|')
+    else:
+        print('|-------+-------+-------+-------+-------+-------+-------|')
+        for row in grid.grid:
+            p = '| '
+            for node in row:
+                p += node.get_print_reward() + ' | '
+            print(p)
+            print('|-------+-------+-------+-------+-------+-------+-------|')
 
-            print(p + ' | ', end='')
-        print()
 

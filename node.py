@@ -22,9 +22,10 @@ class Node(object):
         self.grid = grid
         self.row_i = row_i
         self.col_i = col_i
+        self.point = gd.Point(row_i, col_i)
 
         # Recommended action based on Q-Values
-        self.action = ['U', 'D', 'L', 'R'][randrange(4)]
+        self.action = ['L', 'R', 'U', 'D', 'X'][randrange(5)]
 
         # What kind of state is this? (Goal, Pit, Regular)
         self.state = state
@@ -37,16 +38,32 @@ class Node(object):
         self.init_q_values()
 
     def init_node(self):
-        # {'U': 2.0, 'D': 2.0, 'L': 2.0, 'R': 2.0, 'X': grid.giveup_cost}
+        # If terminating state, there are no moves
         if self.is_terminating():
             self.action = self.state
 
+        # Get Current State and All Actions
         point = self.get_point()
         actions = ['L', 'R', 'U', 'D']
+
+        # Add Potential Actions from Current State
         for action in actions:
             if self.grid.move_exists(point, action):
                 self.q_values[action] = 2
+
+        # Add Give-Up as Potential Move
         self.q_values['X'] = self.grid.giveup_cost
+
+    def get_point(self):
+        return self.point
+
+    def get_reward(self):
+        if self.state == 'G':
+            return self.grid.goal_reward
+        elif self.state == 'P':
+            return self.grid.pit_reward
+        else:
+            return self.grid.step_cost
 
     # Todo: come up with clever initialization (manhattan distance from goal/pit?)
     def init_q_values(self):
@@ -62,19 +79,21 @@ class Node(object):
         self.action = action
         return
 
-    # Todo: fix this shit-show of a function
-    def get_action(self):
-        # Check for terminating state
-        if self.is_terminating():  # WE SHOULD NEVER HIT THIS!!
-            print('Running get_action() from terminating state. THIS SHOULDNT BE HAPPENING')
+    def get_action(self, printing=False):
+
+        #  ####### Check for terminating state ####### #
+        if self.is_terminating():
+            if printing:
+                print('Running get_action() from terminating state. THIS SHOULDNT BE HAPPENING')
             return self.state
 
-        # Check for random move
+        # ####### Check for random move ####### #
         if random() <= self.grid.epsilon:
             actions = list(self.q_values.keys())
             r_i = randrange(0, len(actions))
             return actions[r_i]
 
+        # ####### Find Best Moves ####### #
         # Get list of q-values
         actions = list(self.q_values.items())
         actions.sort()
@@ -84,43 +103,33 @@ class Node(object):
         best_value = best[1]
 
         # Find best move(s)
-        equal = [best_action]
+        best_actions = [best_action]
         for action, value in actions:
             if value == best_value:
-                equal.append(action)
+                best_actions.append(action)
 
         # If >1 best moves, return random action
-        if len(equal) == 1:
-            best_action = equal[0][0]
+        if len(best_actions) == 1:
+            best_action = best_actions[0]
         else:
-            r_i = randrange(0, len(equal))
-            best_action = equal[r_i][0]
+            r_i = randrange(len(best_actions))
+            best_action = best_actions[r_i]
 
         # Update node's action
         self.action = best_action
         return best_action
 
-    def get_point(self):
-        return gd.Point(self.row_i, self.col_i)
-
-    def set_point(self, point):
-        self.row_i = point.row_i
-        self.col_i = point.col_i
-
-    def get_reward(self):
-        if self.state == 'G':
-            return self.grid.goal_reward
-        elif self.state == 'P':
-            return self.grid.pit_reward
-        else:
-            return self.grid.step_cost
-
+    # Return True if this node is a terminating state
     def is_terminating(self):
         return self.state == 'G' or self.state == 'P'
 
+    # Return printable string of reward value
     def get_print_reward(self):
         if self.is_terminating():
-            return ':^5'.format(self.state)
+            return '{:^5}'.format(self.state)
 
         reward = self.get_q_value(self.action)
-        return '{:2.2f}'.format(reward)
+        if reward < 0:
+            return '{0:2.2f}'.format(reward)
+        else:
+            return '+{0:2.2f}'.format(reward)

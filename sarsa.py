@@ -13,7 +13,7 @@ GIVEUP = 'X'
 
 
 def move(node, action):
-    '''
+    """
     Move function takes the current node and an action and
     returns the future node using move probabilities
 
@@ -24,7 +24,7 @@ def move(node, action):
 
     :return: Node we moved to
     :rtype: Node
-    '''
+    """
     # Grid to operate on
     grid = node.grid  # type: gd.Grid
 
@@ -64,19 +64,30 @@ def move(node, action):
 # ===============================================================
 # ================== SARSA Logic (pseudo code) ==================
 # ===============================================================
-# Given: State and Action
+# Given: State
+# Get States best or random action
+# Use Action to get Future State
 # Get State's ((Old Q-value)) and ((Future Expected Reward))
 #
 # Get Q-Value and Reward from Future State
-#   Move to ((Future state)) given ((Current state and action))
 #   SARSA( ((Future State)) )
 #
 # Return ((Future Expected Reward)) and ((New Q-Value))
-def sarsa(node, alpha, gamma):
-    '''
+def sarsa(node, alpha, gamma, depth=0):
+    """
+    :param node: Current State
     :type node: Node
+
+    :param alpha: Learning Rate
+    :type alpha: float
+    :param gamma: Discount Rate
+    :type gamma: float
+
+    :return: newly calculated Q-Value
     :rtype: float
-    '''
+    """
+
+    print('depth: ', depth)
     # Check for terminating state
     if node.is_terminating():
         return node.get_reward()
@@ -94,7 +105,7 @@ def sarsa(node, alpha, gamma):
 
     # Q-Value of Future State
     future_node = move(node, action)
-    future_q = sarsa(future_node, alpha, gamma)
+    future_q = sarsa(future_node, alpha, gamma, depth=depth+1)
 
     # Calculate new Q-Value
     new_q_value = old_q + alpha * (reward + gamma * future_q - old_q)

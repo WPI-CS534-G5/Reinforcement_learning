@@ -9,7 +9,7 @@ from node import Node
 # trials = argv[5]
 # epsilon = argv[6]
 goal_reward = 10
-pit_reward = -2
+pit_reward = -3
 step_cost = -0.1
 giveup_cost = -3
 num_iterations = 10000
@@ -43,14 +43,20 @@ gamma = 0.5  # Discount Factor
 grid = gd.Grid(state_map, goal_reward, pit_reward, step_cost, giveup_cost, epsilon)
 
 for iteration in range(num_iterations):
-    # Get a random position
-    node = grid.get_rand_node()  # type: Node
-    sarsa.sarsa(node, alpha, gamma)
-    gd.print_grid(grid)
-    print()
 
-# See the resulting board
+    # Get a random node
+    node = grid.get_rand_node()  # type: Node
+
+    # Run sarsa() from that node
+    sarsa.sarsa(node, alpha, gamma)
+
+    # DEGBUG: print resulting grid
+    # gd.print_grid(grid)
+    # print()
+
+
+# Print Results
 gd.print_grid(grid)
-# gd.print_grid(grid, view_reward=True)
+gd.print_grid(grid, view_reward=True)
 
 
