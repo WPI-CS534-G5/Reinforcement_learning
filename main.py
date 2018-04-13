@@ -31,28 +31,29 @@ state_map = [[0, 0, 0, 0, 0, 0, 0],
 # The learning rate determines to what extent newly acquired information overrides old information.
 # A factor of 0 will make the agent not learn anything, while a factor of 1 would make
 #  the agent consider only the most recent information.
-learning_rate = 0.5
+alpha = 0.5  # Learning Rate
 
 # The discount factor determines the importance of future rewards. A factor
 # of 0 makes the agent "opportunistic" by only considering current rewards,
 # while a factor approaching 1 will make it strive for a long-term high reward.
 # If the discount factor meets or exceeds 1, the Q values may diverge.
-discount_factor = 0.5
+gamma = 0.5  # Discount Factor
 
 
 # Initialize the map
 grid = gd.Grid(state_map, goal_reward, pit_reward)
 
-# Todo: figure out difference between reward and q-value
-# Todo: figure out where to update the q-value of the nodes
+
 for iteration in range(num_iterations):
 
     # Get a random position
     current_point = grid.get_rand_position()  # type: gd.Point
     current_node = grid.get_node(current_point)  # type: node.Node
 
+    # Todo: we probably don't need this while loop
     # While your current position is not on a terminating state
-    while (current_node.get_state() is not 'G') and (current_node.get_state() is not 'P'):
+    while not current_node.is_terminating():
+
         # Get all the neighbors of the current position
         neighbors = grid.get_neighbors(current_node)
 
@@ -70,7 +71,7 @@ for iteration in range(num_iterations):
             future_q_value = new_node.get_q_value()
             future_reward = new_node.get_reward()
             new_q_value = sarsa.q_function(current_q_value, future_q_value, future_reward,
-                                           learning_rate, discount_factor)
+                                           alpha, gamma)
 
             if max_q_value is None or new_q_value > max_q_value:
                 best_q_value = new_q_value

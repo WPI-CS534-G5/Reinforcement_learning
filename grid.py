@@ -9,30 +9,34 @@ class Point(object):
         self.col_i = col_i
 
     # Mutate Point
-    def move_up(self):
-        self.row_i -= 1
+    def move_up(self): self.row_i -= 1
 
-    def move_down(self):
-        self.row_i += 1
+    def move_down(self): self.row_i += 1
 
-    def move_left(self):
-        self.col_i -= 1
+    def move_left(self): self.col_i -= 1
 
-    def move_right(self):
-        self.col_i += 1
+    def move_right(self): self.col_i += 1
 
     # Return new Point
     def get_move_up(self):
-        return Point(self.row_i - 1, self.col_i)
+        p = Point(self.row_i, self.col_i)
+        p.move_up()
+        return p
 
     def get_move_down(self):
-        return Point(self.row_i + 1, self.col_i)
+        p = Point(self.row_i, self.col_i)
+        p.move_down()
+        return p
 
     def get_move_left(self):
-        return Point(self.row_i, self.col_i - 1)
+        p = Point(self.row_i, self.col_i)
+        p.move_left()
+        return p
 
     def get_move_right(self):
-        return Point(self.row_i, self.col_i + 1)
+        p = Point(self.row_i, self.col_i)
+        p.move_right()
+        return p
 
     # Get direction from self to new point
     def get_direction(self, point):
@@ -52,6 +56,7 @@ class Point(object):
         return False
 
 
+# Store Grid-World
 class Grid(object):
     """Grid
     Creates a matrix of nodes. nothing else
@@ -77,7 +82,7 @@ class Grid(object):
                 elif state == 'G':
                     reward = self.goal_reward
 
-                new_row.append(Node(row_i, col_i, state, reward))
+                new_row.append(Node(row_i, col_i, state))
             m.append(new_row)
         return m
 
@@ -88,7 +93,7 @@ class Grid(object):
     def get_rand_position(self):
         rand_row = randrange(0, self.num_rows)
         rand_col = randrange(0, self.num_cols)
-        state = self.grid[rand_row][rand_col].get_state()
+        state = self.grid[rand_row][rand_col].state
 
         if (state == 'P') or (state == 'G'):
             return self.get_rand_position()
