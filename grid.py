@@ -116,7 +116,7 @@ class Grid(object):
 
 # Pretty-Print on command line
 def print_grid(grid, view_reward=False):
-    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': 'G', 'P': 'P', 'X': 'X'}
+    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': '#', 'P': 'P', 'X': 'G'}
 
     if not view_reward:
         print('|---+---+---+---+---+---+---|')

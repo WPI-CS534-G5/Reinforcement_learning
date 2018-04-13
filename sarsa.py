@@ -75,6 +75,7 @@ def move(node, action):
 # Return ((Future Expected Reward)) and ((New Q-Value))
 def sarsa(node, alpha, gamma):
     """
+    WARNING: Stack-Overflow with Small Epsilon Values
     :param node: Current State
     :type node: Node
 
@@ -93,8 +94,10 @@ def sarsa(node, alpha, gamma):
     # Get action and Check give-up
     action = node.get_action()
     if action == GIVEUP:
+        node.set_action(action)
         return node.grid.giveup_cost
 
+    # ####### Calculate Function ####### #
     # Old Estimate
     old_q = node.get_q_value(action)
 
@@ -106,9 +109,59 @@ def sarsa(node, alpha, gamma):
     future_q = sarsa(future_node, alpha, gamma)
 
     # Calculate new Q-Value
-    new_q_value = old_q + alpha * (reward + gamma * future_q - old_q)
+    new_q_value = old_q + (alpha * (reward + (gamma * future_q) - old_q))
 
     # Update Node and return Updated Estimate
     node.set_q_value(new_q_value, action)
     node.set_action(action)
     return new_q_value
+
+def sarsa_iterative(starting_node, alpha, gamma):
+    """
+
+    :param grid: Our Grid-World
+    :type grid: gd.Grid
+
+    :param node: Starting node
+    :type node: Node
+
+    :param alpha: Learning Rate
+    :param gamma: Discount Rate
+
+    :return: idk man
+    """
+
+    node = starting_node
+    nodes = list()
+    actions = list()
+
+    # Get Path taken by agent
+    while not node.is_terminating():
+
+        # Get action and Check give-up
+        action = node.get_action()
+        actions.append(action)
+        if action == GIVEUP:
+            node.action = GIVEUP
+            nodes.append(node)
+            break
+
+        # Get new node using action
+        node = move(node, action)
+        nodes.append(node)
+
+    # Last Q-Value
+    node = nodes.pop()
+    new_q = node.get_reward()
+
+    # Update Q-Values with resulting list of nodes
+    while nodes:
+        node = nodes.pop()
+        action = actions.pop()
+        reward = node.get_reward()
+        old_q = node.get_q_value(action)
+
+        new_q_value = old_q + (alpha * (reward + (gamma * new_q) - old_q))
+        node.set_q_value(new_q_value, action)
+
+    return

@@ -48,7 +48,7 @@ class Node(object):
         # Add Potential Actions from Current State
         for action in actions:
             if self.grid.move_exists(point, action):
-                self.q_values[action] = 2
+                self.q_values[action] = -2
 
         # Add Give-Up as Potential Move
         self.q_values['X'] = self.grid.giveup_cost
@@ -61,6 +61,8 @@ class Node(object):
             return self.grid.goal_reward
         elif self.state == 'P':
             return self.grid.pit_reward
+        elif self.action == 'X':
+            return self.grid.giveup_cost
         else:
             return self.grid.step_cost
 
