@@ -1,34 +1,61 @@
 import grid as gd
+from random import random
 from random import randrange
 
 
-class Node:
-    def __init__(self, row_i, col_i, state, grid):
+class Node(object):
+    def __init__(self, grid, row_i, col_i, state):
+        """
+        :param grid: a state representation of a grid world
+        :type grid: gd.Grid
+
+        :param row_i: row position in grid world
+        :type row_i: int
+        :param col_i: column position in grid world
+        :type col_i: int
+
+        :param state: description of type of state (Goal, Pit, Regular)
+        :type state: str
+        """
 
         # Grid and Position on it
         self.grid = grid
         self.row_i = row_i
         self.col_i = col_i
 
-        # What kind of state is this? (Goal, Pit, Regular)
-        self.state = state
-
         # Recommended action based on Q-Values
         self.action = ['U', 'D', 'L', 'R'][randrange(4)]
 
-        # Expected Future Reward
-        self.reward = 0
+        # What kind of state is this? (Goal, Pit, Regular)
+        self.state = state
+        if self.is_terminating():
+            self.action = state
 
         # Store Q-Value for every action
-        # Use this dict to access individual Q-Values
-        self.q_values = {'U': 2, 'D': 2,
-                         'L': 2, 'R': 2}
+        # (U)p, (D)own, (L)eft, (R)ight, (X)Give-up
+        self.q_values = {'U': 2.0, 'D': 2.0, 'L': 2.0, 'R': 2.0, 'X': grid.giveup_cost}
 
-    def update_action(self):
-        self.action = self.get_action()
+    # Todo: come up with clever initialization (manhattan distance from goal/pit?)
+    def init_q_values(self):
         return
 
+    def set_action(self, action):
+        self.action = action
+        return
+
+    def set_q_value(self, q_value, action):
+        self.q_values[action] = q_value
+
     def get_action(self):
+        # Check for terminating state
+        if self.is_terminating():  # WE SHOULD NEVER HIT THIS!!
+            print('Running get_action() from terminating state. THIS SHOULDNT BE HAPPENING')
+            return self.state
+        if random() <= self.grid.epsilon:  # Check for random move
+            actions = list(self.q_values.items())
+            r_i = randrange(0, len(actions))
+            return actions[r_i]
+
         actions = list(self.q_values.items())
         actions.sort()
 
@@ -39,14 +66,13 @@ class Node:
                 equal.append(action)
 
         if len(actions) == 1:
-            return actions[0]
+            best_action = actions[0]
         else:
             r_i = randrange(0, len(actions))
-            return actions[r_i]
+            best_action = actions[r_i]
 
-    def update_reward(self, new_reward):
-        if new_reward > self.reward:
-            self.reward = new_reward
+        self.action = best_action
+        return best_action
 
     def get_q_value(self, action):
         return self.q_values[action]
@@ -56,6 +82,18 @@ class Node:
 
     def get_point(self):
         return gd.Point(self.row_i, self.col_i)
+
+    def set_point(self, point):
+        self.row_i = point.row_i
+        self.col_i = point.col_i
+
+    def get_reward(self):
+        if self.state == 'G':
+            return self.grid.goal_reward
+        elif self.state == 'P':
+            return self.grid.pit_reward
+        else:
+            return self.grid.step_cost
 
     def is_terminating(self):
         return self.state == 'G' or self.state == 'P'

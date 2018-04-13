@@ -1,62 +1,55 @@
-from grid import Grid
-from grid import Point
+import grid as gd
+from node import Node
 from random import random
 
 
+# Map Direction to 90-degrees right direction
 n_right = {'U': 'R', 'R': 'D', 'D': 'L', 'L': 'U'}
+
+# Map Direction to 90-degrees left direction
 n_left = {'U': 'L', 'L': 'D', 'D': 'R', 'R': 'U'}
 
-
-# Calculates the updated Q' value
-# Where q1 is s and q2 is s'
-def q_function(q1, q2, reward, learning_rate, discount_factor):
-    return q1 + learning_rate * (reward + discount_factor * q2 - q1)
+GIVEUP = 'X'
 
 
-# Decides to move or not based on epsilon
-def take_random_move(epsilon):
-    return random() <= epsilon
+def move(node, action):
+    '''
+    Move function takes the current node and an action and
+    returns the future node using move probabilities
 
+    :param node: Current Node
+    :type node: Node
+    :param action: Action to take
+    :type action: str
 
-def get_action():
-    return
-
-
-# Move function, it is not deterministic
-def move(current_node, new_node):
-    grid = current_node.grid
-
-    # Get of new node from current node
-    new_point = new_node.get_point()  # type: Point
-    current_point = current_node.get_point()  # type: Point
-    direction = current_point.get_direction(new_point)
-
-    # Update Action
-    current_node.update_action(direction)
+    :return: Node we moved to
+    :rtype: Node
+    '''
+    # Grid to operate on
+    grid = node.grid  # type: gd.Grid
 
     # MOVE
     prob = random()
     # Move occurs as expected: [0, 0.7]
     if prob <= 0.7:
-        current_point = new_point
+        new_node = grid.move(node, action)
+
     # Moves 90-degrees right: (0.7, 0.8]
     elif prob <= 0.8:
-        direction = n_right[direction]
-        grid.move(current_point, direction)
+        new_node = grid.move(node, n_right[action])
+
     # Moves 90-degrees left: (0.8, 0.9]
     elif prob <= 0.9:
-        direction = n_left[direction]
-        grid.move(current_point, direction)
+        new_node = grid.move(node, n_left[action])
+
     # Moves double: (0.9, 1]
     else:
-        grid.move(current_point, direction)
-        grid.move(current_point, direction)
+        new_node = grid.move(node, action)
+        new_node = grid.move(new_node, action)
 
-    return grid.get_node(current_point)
+    return new_node
 
 
-# Todo: NIKO, read this explaination of how sarsa is a recursive function
-#
 # SARSA is a recursive function taking a state and an action and
 # repeating until reaching a terminating state
 #
@@ -79,27 +72,34 @@ def move(current_node, new_node):
 #   SARSA( ((Future State)) )
 #
 # Return ((Future Expected Reward)) and ((New Q-Value))
-#
-# Input: current state, learning rate, discount rate
-# Output: (future expected reward, learning rate, discount rate)
 def sarsa(node, alpha, gamma):
+    '''
+    :type node: Node
+    :rtype: float
+    '''
+    # Check for terminating state
     if node.is_terminating():
-        return node.reward, 0  # reward and Q-Value
+        return node.get_reward()
+
+    # Get action and Check give-up
+    action = node.get_action()
+    if action == GIVEUP:
+        return node.grid.giveup_cost
 
     # Old Estimate
-    action = 'U'  # Todo: get best action to take
     old_q = node.get_q_value(action)
 
-    # Expected Future Reward
-    reward = node.reward
+    # Reward for taking a move
+    reward = node.grid.step_cost
 
     # Q-Value of Future State
-    future_node = move()  # Todo: get future node using Move()
-    new_reward, future_q  = sarsa(future_node, alpha, gamma)
-    new_reward = 0  # We'll also be getting a new reward value here
+    future_node = move(node, action)
+    future_q = sarsa(future_node, alpha, gamma)
 
-    new_estimate = old_q + alpha * (reward + gamma * future_q - old_q)
+    # Calculate new Q-Value
+    new_q_value = old_q + alpha * (reward + gamma * future_q - old_q)
 
-    # Todo: update values in current node
-
-    return new_reward, new_estimate
+    # Update Node and return Updated Estimate
+    node.set_q_value(new_q_value, action)
+    node.set_action(action)
+    return new_q_value

@@ -3,7 +3,6 @@ from random import randrange
 
 
 class Point(object):
-    '''Point Class'''
     def __init__(self, row_i, col_i):
         self.row_i = row_i
         self.col_i = col_i
@@ -61,10 +60,15 @@ class Grid(object):
     """Grid
     Creates a matrix of nodes. nothing else
     """
-    def __init__(self, state_map, goal_reward, pit_reward):
+    def __init__(self, state_map, goal_reward, pit_reward, step_cost, giveup_cost, epsilon):
+        # Grid-World Parameters
         self.pit_reward = pit_reward
         self.goal_reward = goal_reward
+        self.step_cost = step_cost
+        self.giveup_cost = giveup_cost
+        self.epsilon = epsilon
 
+        # Grid-World Definition
         self.grid = self.init_from_map(state_map)
         self.num_rows = len(self.grid)
         self.num_cols = len(self.grid[0])
@@ -74,15 +78,8 @@ class Grid(object):
         m = list()
         for row_i, row in enumerate(matrix):
             new_row = list()
-
             for col_i, state in enumerate(row):
-                reward = 0
-                if state == 'P':
-                    reward = self.pit_reward
-                elif state == 'G':
-                    reward = self.goal_reward
-
-                new_row.append(Node(row_i, col_i, state, self))
+                new_row.append(Node(self, row_i, col_i, state))
             m.append(new_row)
         return m
 
@@ -90,35 +87,24 @@ class Grid(object):
         return self.grid[point.row_i][point.col_i]
 
     # Returns random coordinate that is not pit or goal state
-    def get_rand_position(self):
+    def get_rand_node(self):
         rand_row = randrange(0, self.num_rows)
         rand_col = randrange(0, self.num_cols)
         state = self.grid[rand_row][rand_col].state
 
         if (state == 'P') or (state == 'G'):
-            return self.get_rand_position()
+            return self.get_rand_node()
 
-        return Point(rand_row, rand_col)
-
-    # FOR_DEBUGGING: Takes in a coordinate and sets a flag on the map
-    def set_flag(self, row, col, flag_val): self.grid[row][col] = flag_val
+        return self.grid[rand_row][rand_col]
 
     # Check if move exists
-    def up_exists(self, point):
-        up = point.get_move_up()
-        return up.row_i >= 0
+    def up_exists(self, point): return point.get_move_up().row_i >= 0
 
-    def down_exists(self, point):
-        down = point.get_move_down()
-        return down.row_i < self.num_rows
+    def down_exists(self, point): return point.get_move_down().row_i < self.num_rows
 
-    def right_exists(self, point):
-        right = point.get_move_right()
-        return right.col_i < self.num_cols
+    def right_exists(self, point): return point.get_move_right().col_i < self.num_cols
 
-    def left_exists(self, point):
-        left = point.get_move_left()
-        return left.col_i >= 0
+    def left_exists(self, point): return point.get_move_left().col_i >= 0
 
     # Check if move exists and move
     def move_up(self, point):
@@ -142,7 +128,7 @@ class Grid(object):
         return point
 
     # Move point based on input direction
-    def move(self, point, direction):
+    def move_helper(self, point, direction):
         if direction == 'U':
             self.move_up(point)
         elif direction == 'D':
@@ -151,6 +137,11 @@ class Grid(object):
             self.move_left(point)
         elif direction == 'R':
             self.move_left(point)
+
+    def move(self, node, action):
+        point = node.get_point()
+        self.move_helper(point, action)
+        return self.get_node(point)
 
     # Given node, get neighbors
     def get_neighbors(self, node):
@@ -171,16 +162,12 @@ class Grid(object):
 
 
 # Pretty-Print on command line
+# Todo: print Grid of Q-Values(rewards)
 def print_grid(grid, view_reward=False):
-    p = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 0: '0'}
-
+    p = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': 'G', 'P': 'P'}
     for row in grid.grid:
         print('| ', end='')
-
         for node in row:
-            if node.state in ['P', 'G']:
-                print(node.state, end='')
-            else:
-                print(p[node.action], end='')
+            print(p[node.action], end='')
             print(' | ', end='')
         print()
