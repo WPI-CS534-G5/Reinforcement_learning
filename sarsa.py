@@ -188,4 +188,4 @@ def sarsa_eduardo(node, alpha, gamma):
         node.set_q_value(new_q_value, action)
         node = future_node
 
-    return
+    return node

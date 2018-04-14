@@ -47,7 +47,7 @@ class Node(object):
         # Add Potential Actions from Current State
         for action in actions:
             if self.grid.move_exists(point, action):
-                self.q_values[action] = -2
+                self.q_values[action] = 0
 
         # Add Give-Up as Potential Move
         self.q_values['X'] = self.grid.giveup_cost
