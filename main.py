@@ -1,6 +1,7 @@
-import sarsa
 import grid as gd
 from node import Node
+from sarsa import sarsa
+from sarsa import sarsa_iterative
 
 # goal_reward = argv[1]
 # pit_reward = argv[2]
@@ -8,12 +9,14 @@ from node import Node
 # giveup_cost = argv[4]
 # trials = argv[5]
 # epsilon = argv[6]
+
+# 5 -2 -0.1 -3 10000 0.1
 goal_reward = 5
-pit_reward = -3
-step_cost = -0.8
-giveup_cost = -1
-num_iterations = 100000
+pit_reward = -2
+step_cost = -0.1
+num_iterations = 10000
 epsilon = 0.1
+giveup_cost = -2
 
 p = 'P'
 g = 'G'
@@ -48,8 +51,8 @@ for iteration in range(num_iterations):
     node = grid.get_rand_node()  # type: Node
 
     # Run sarsa() from that node
-    # sarsa.sarsa(node, alpha, gamma)
-    sarsa.sarsa_iterative(node, alpha, gamma)
+    # sarsa(node, alpha, gamma)
+    sarsa_iterative(node, alpha, gamma)
 
     # DEGBUG: print resulting grid
     # gd.print_grid(grid)

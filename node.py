@@ -129,7 +129,7 @@ class Node(object):
         if self.is_terminating():
             return '{:^5}'.format(self.state)
 
-        reward = self.get_q_value(self.action)
+        reward = self.get_q_value(self.get_action(printing=True))
         if reward < 0:
             return '{0:2.2f}'.format(reward)
         else:
