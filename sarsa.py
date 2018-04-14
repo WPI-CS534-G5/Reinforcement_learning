@@ -1,6 +1,7 @@
 import grid as gd
 from node import Node
 from random import random
+from random import randrange
 
 
 # Map Direction to 90-degrees right direction
@@ -163,5 +164,28 @@ def sarsa_iterative(starting_node, alpha, gamma):
 
         new_q_value = old_q + (alpha * (reward + (gamma * new_q) - old_q))
         node.set_q_value(new_q_value, action)
+
+    return
+
+
+# New Q-Value = Old Q-Value + Learning-Rate *
+#               ( Step-Discount + ( Discount-Factor * Future Q-Value ) - Old Q-Value )
+def sarsa_eduardo(node, alpha, gamma):
+
+    while not node.is_terminating():
+        action = node.get_action()
+        if action == GIVEUP:
+            node.set_q_value(node.grid.giveup_cost, GIVEUP)
+            break
+
+        old_q = node.get_q_value(action)
+        future_node = move(node, action)
+        future_q = future_node.get_q_value(random=True)
+
+        reward = node.grid.step_cost
+        new_q_value = old_q + (alpha * (reward + (gamma * future_q) - old_q))
+
+        node.set_q_value(new_q_value, action)
+        node = future_node
 
     return

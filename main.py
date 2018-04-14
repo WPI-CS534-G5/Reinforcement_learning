@@ -1,6 +1,7 @@
 import grid as gd
 from node import Node
 from sarsa import sarsa
+from sarsa import sarsa_eduardo
 from sarsa import sarsa_iterative
 
 # goal_reward = argv[1]
@@ -14,8 +15,8 @@ from sarsa import sarsa_iterative
 goal_reward = 5
 pit_reward = -2
 step_cost = -0.1
-num_iterations = 10000
-epsilon = 0.1
+num_iterations = 100000
+epsilon = 0.2
 giveup_cost = -2
 
 p = 'P'
@@ -33,13 +34,13 @@ state_map = [[r, r, r, r, r, r, r],
 # The learning rate determines to what extent newly acquired information overrides old information.
 # A factor of 0 will make the agent not learn anything, while a factor of 1 would make
 #  the agent consider only the most recent information.
-alpha = 0.5  # Learning Rate
+alpha = 0.2  # Learning Rate
 
 # The discount factor determines the importance of future rewards. A factor
 # of 0 makes the agent "opportunistic" by only considering current rewards,
 # while a factor approaching 1 will make it strive for a long-term high reward.
 # If the discount factor meets or exceeds 1, the Q values may diverge.
-gamma = 0.5  # Discount Factor
+gamma = 0.8  # Discount Factor
 
 
 # Initialize the map
@@ -49,10 +50,11 @@ for iteration in range(num_iterations):
 
     # Get a random node
     node = grid.get_rand_node()  # type: Node
+    
 
     # Run sarsa() from that node
-    # sarsa(node, alpha, gamma)
-    sarsa_iterative(node, alpha, gamma)
+    sarsa_eduardo(node, alpha, gamma)
+
 
     # DEGBUG: print resulting grid
     # gd.print_grid(grid)

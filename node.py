@@ -22,7 +22,6 @@ class Node(object):
         self.grid = grid
         self.row_i = row_i
         self.col_i = col_i
-        self.point = gd.Point(row_i, col_i)
 
         # Recommended action based on Q-Values
         self.action = ['L', 'R', 'U', 'D', 'X'][randrange(5)]
@@ -54,7 +53,7 @@ class Node(object):
         self.q_values['X'] = self.grid.giveup_cost
 
     def get_point(self):
-        return self.point
+        return gd.Point(self.row_i, self.col_i)
 
     def get_reward(self):
         if self.state == 'G':
@@ -73,7 +72,10 @@ class Node(object):
     def set_q_value(self, q_value, action):
         self.q_values[action] = q_value
 
-    def get_q_value(self, action):
+    def get_q_value(self, action=None, random=False):
+        if random:
+            actions = list(self.q_values.keys())
+            return self.q_values[actions[randrange(len(actions))]]
         return self.q_values[action]
 
     def set_action(self, action):
