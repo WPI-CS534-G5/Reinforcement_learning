@@ -1,6 +1,6 @@
 import grid as gd
 from random import randrange
-from settings import UP, DOWN, LEFT, RIGHT, GIVEUP, GOAL, PIT
+from settings import UP, DOWN, LEFT, RIGHT, GIVEUP, GOAL, PIT, NORM
 
 
 DEBUG = True
@@ -41,7 +41,7 @@ class Node(object):
         if self.is_terminating():
             return
 
-        self.action = None  # No actions taken yet
+        self.action = self.state  # No actions taken yet
 
         # Set Possible Actions and their Q-Values
         all_actions = [LEFT, RIGHT, UP, DOWN]
@@ -71,9 +71,14 @@ class Node(object):
         self.q_values[action] = q_value
 
     def get_q_value(self, action=None, random_value=False):
+        if self.is_terminating():
+            return self.get_reward()
+        if action == self.state:
+            return 0
         if random_value or not action:
             actions = list(self.q_values.keys())
             return self.q_values[actions[randrange(len(actions))]]
+
         return self.q_values[action]
 
     def get_best_q_value(self):
@@ -133,11 +138,12 @@ class Node(object):
         if best[0] < self.grid.giveup_cost:
             return GIVEUP
 
-        same_actions = [best]
+        same_actions = [best[1]]
         for action_tup in actions:  # [ (value, key) ] <--> [ (q-value, action) ]
             if action_tup[0] == best[0]:
                 same_actions.append(action_tup[1])
 
+        # print(same_actions)
         return same_actions
 
     def get_best_action(self, index=0, random_best=False):

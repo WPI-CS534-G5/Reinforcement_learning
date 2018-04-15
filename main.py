@@ -1,10 +1,12 @@
-import node
-import grid as gd
+from grid import Grid
+from grid import Point
+from node import Node
+import settings as st
+
 from sarsa import sarsa
 from sarsa import sarsa_eduardo
 from sarsa import sarsa_iterative
 from matplotlib import pyplot as plt
-import settings as st
 
 # goal_reward = argv[1]
 # pit_reward = argv[2]
@@ -21,9 +23,9 @@ num_iterations = 1
 epsilon = 0.1
 giveup_cost = -2
 
-p = 'P'
-g = 'G'
-r = 'O'
+p = st.PIT
+g = st.GOAL
+r = st.NORM
 num_rows = 6
 num_cols = 7
 state_map = [[r, r, r, r, r, r, r],
@@ -46,17 +48,18 @@ gamma = 0.5  # Discount Factor
 
 
 # Initialize the map
-grid = gd.Grid(state_map, goal_reward, pit_reward, step_cost, giveup_cost, epsilon)
+grid = Grid(state_map, goal_reward, pit_reward, step_cost, giveup_cost, epsilon)
 
 rewards = list()
 for iteration in range(num_iterations):
 
     # Get a random node
     node = grid.get_rand_node()  # type: Node
+    point = node.get_point()  # type: Point
+    print(f'start(row,col): ({point.row_i}, {point.col_i})')
 
     # Run sarsa() from that node
     reward = sarsa_eduardo(node, alpha, gamma)
-
     st.print_grid(grid, best_path=False)
     st.print_grid(grid, best_path=False, view_reward=True)
     grid.clear_actions()
@@ -80,9 +83,8 @@ for iteration in range(num_iterations):
 # plt.scatter(x, y, marker='.')
 # plt.show()
 
-
-# Print Results
-st.print_grid(grid)
-st.print_grid(grid, view_reward=True)
-
+# st.print_grid(grid, best_path=False)
+# st.print_grid(grid, best_path=False, view_reward=True)
+# st.print_grid(grid, best_path=True)
+# st.print_grid(grid, best_path=True, view_reward=True)
 

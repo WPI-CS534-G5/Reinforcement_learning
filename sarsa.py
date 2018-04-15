@@ -1,14 +1,13 @@
 import grid as gd
 from node import Node
 from random import random
+from settings import UP, DOWN, LEFT, RIGHT, GIVEUP
 
 # Map Direction to 90-degrees right direction
-n_right = {'U': 'R', 'R': 'D', 'D': 'L', 'L': 'U'}
+n_right = {UP: 'R', RIGHT: 'D', DOWN: 'L', LEFT: 'U'}
 
 # Map Direction to 90-degrees left direction
-n_left = {'U': 'L', 'L': 'D', 'D': 'R', 'R': 'U'}
-
-GIVEUP = 'X'
+n_left = {UP: 'L', LEFT: 'D', DOWN: 'R', RIGHT: 'U'}
 
 
 def move(node, action):
@@ -76,26 +75,37 @@ def update_node(node, q_value, action):
 #               ( Step-Discount + ( Discount-Factor * Future Q-Value ) - Old Q-Value )
 def sarsa_eduardo(node, alpha, gamma):
 
+    actions = list()
+    actual_actions = list()
     future_expected_rewards = list()
     while not node.is_terminating():
 
         # Get Action and Check for Give-up
         action = get_action(node)
+        actions.append(action)
         if action == GIVEUP:
-            node.set_q_value(node.grid.giveup_cost, GIVEUP)
+            update_node(node, node.grid.giveup_cost, action)
             break
 
         q = node.get_q_value(action)
         reward = node.get_reward()
-
         node_prime, q_prime = get_prime(node, action)
-
         new_q = q + (alpha * (reward + (gamma * q_prime) - q))
+
+        #
+        # DEBUG STATEMENTS
         future_expected_rewards.append(new_q)
+        point_start = node.get_point()
+        point_end = node_prime.get_point()
+        a = point_start.get_direction(point_end)
+        actual_actions.append(a)
+        #
 
         update_node(node, new_q, action)
         node = node_prime
 
+    print('Intended Actions: ', actions)
+    print('Actual Actions:   ', actual_actions)
     return future_expected_rewards
 
 
@@ -154,38 +164,28 @@ def sarsa(node, alpha, gamma):
         return node.get_reward()
 
     # Get action and Check give-up
-    action = node.get_best_action()
+    action = get_action(node)
     if action == GIVEUP:
-        node.set_action(action)
-        return node.get_reward()
+        reward = node.grid.giveup_cost
+        update_node(node, reward, GIVEUP)
+        return reward
 
     # ####### Calculate Function ####### #
-    # Old Estimate
-    old_q = node.get_q_value(action)
-
-    # Reward for taking a move
-    reward = node.get_reward()
-
-    # Q-Value of Future State
-    future_node = move(node, action)
-    future_q = sarsa(future_node, alpha, gamma)
-
-    # Calculate new Q-Value
-    new_q_value = old_q + (alpha * (reward + (gamma * future_q) - old_q))
+    q = node.get_q_value(action)                            # Old Estimate
+    reward = node.get_reward()                              # Reward for taking a move
+    node_prime, q_prime = get_prime(node, action)           # Q-Value of Future State
+    new_q = q + (alpha * (reward + (gamma * q_prime) - q))  # Calculate new Q-Value
 
     # Update Node and return Updated Estimate
-    node.set_q_value(new_q_value, action)
-    node.set_action(action)
-    return new_q_value
+    update_node(node, new_q, action)
+
+    return new_q
 
 
 def sarsa_iterative(starting_node, alpha, gamma):
     """
-    :param grid: Our Grid-World
-    :type grid: gd.Grid
-
-    :param node: Starting node
-    :type node: Node
+    :param starting_node: Starting node
+    :type starting_node: Node
 
     :param alpha: Learning Rate
     :param gamma: Discount Rate

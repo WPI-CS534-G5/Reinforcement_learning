@@ -1,7 +1,3 @@
-from node import Node
-from grid import Grid
-
-
 # ####### List of possible actions for each state ####### #
 # U: Up
 # D: Down
@@ -29,12 +25,6 @@ act = {UP: '^', DOWN: 'v', LEFT: '<', RIGHT: '>', GIVEUP: 'G', GOAL: '#', PIT: '
 
 # Return printable string of reward value
 def get_print_reward(node, best=True):
-    """
-    :param node: Node to get reward from
-    :type node: Node
-    :return: printable reward string
-    :rtype: str
-    """
     if node.is_terminating():
         return '{:^5}'.format(node.state)
 
@@ -73,18 +63,20 @@ def print_grid(grid, best_path=True, view_reward=False):
     """
 
     if not view_reward:
-        print('|---+---+---+---+---+---+---|')
-        for row in grid.grid:
-            p = '| '
+        print(' |-0-+-1-+-2-+-3-+-4-+-5-+-6-|')
+        print(' |---+---+---+---+---+---+---|')
+        for i, row in enumerate(grid.grid):
+            p = str(i) + '| '
             for node in row:
                 p += get_print_action(node, best=best_path) + ' | '
             print(p)
-            print('|---+---+---+---+---+---+---|')
+            print(' |---+---+---+---+---+---+---|')
     else:
-        print('|-------+-------+-------+-------+-------+-------+-------|')
-        for row in grid.grid:
-            p = '| '
+        print(' |---0---+---1---+---2---+---3---+---4---+---5---+---6---|')
+        for i, row in enumerate(grid.grid):
+            p = str(i) + '| '
             for node in row:
                 p += get_print_reward(node, best=best_path) + ' | '
             print(p)
-            print('|-------+-------+-------+-------+-------+-------+-------|')
+            print(' |-------+-------+-------+-------+-------+-------+-------|')
+    print()

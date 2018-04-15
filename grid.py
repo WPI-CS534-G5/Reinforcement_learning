@@ -1,6 +1,6 @@
 from node import Node
 from random import randrange
-from settings import UP, DOWN, LEFT, RIGHT, GIVEUP, GOAL, PIT
+from settings import UP, DOWN, LEFT, RIGHT, GIVEUP
 
 
 # Helper object for Grid Class
@@ -105,7 +105,7 @@ class Grid(object):
     def clear_actions(self):
         for row in self.grid:
             for node in row:
-                node.action = None
+                node.action = node.state
                 node.actions = list()
 
     def get_node(self, point):
