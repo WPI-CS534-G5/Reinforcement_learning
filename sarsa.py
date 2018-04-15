@@ -1,8 +1,6 @@
 import grid as gd
 from node import Node
 from random import random
-from random import randrange
-
 
 # Map Direction to 90-degrees right direction
 n_right = {'U': 'R', 'R': 'D', 'D': 'L', 'L': 'U'}
@@ -56,6 +54,64 @@ def move(node, action):
     return new_node
 
 
+def get_action(node):
+    if random() <= node.grid.epsilon:
+        return node.get_random_action()
+
+    return node.get_best_action(random_best=True)
+
+
+def get_prime(node, action):
+    node_prime = move(node, action)  # move(action) to get s'
+    q_prime = node_prime.get_best_q_value()  # ARGMAX[Q-Values] to get a'
+    return node_prime, q_prime
+
+
+def update_node(node, q_value, action):
+    node.set_q_value(q_value, action)
+    node.set_action(action)
+
+
+# New Q-Value = Old Q-Value + Learning-Rate *
+#               ( Step-Discount + ( Discount-Factor * Future Q-Value ) - Old Q-Value )
+def sarsa_eduardo(node, alpha, gamma):
+
+    future_expected_rewards = list()
+    while not node.is_terminating():
+
+        # Get Action and Check for Give-up
+        action = get_action(node)
+        if action == GIVEUP:
+            node.set_q_value(node.grid.giveup_cost, GIVEUP)
+            break
+
+        q = node.get_q_value(action)
+        reward = node.get_reward()
+
+        node_prime, q_prime = get_prime(node, action)
+
+        new_q = q + (alpha * (reward + (gamma * q_prime) - q))
+        future_expected_rewards.append(new_q)
+
+        update_node(node, new_q, action)
+        node = node_prime
+
+    return future_expected_rewards
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # SARSA is a recursive function taking a state and an action and
 # repeating until reaching a terminating state
 #
@@ -171,33 +227,3 @@ def sarsa_iterative(starting_node, alpha, gamma):
         node.set_q_value(new_q_value, action)
 
     return
-
-
-# New Q-Value = Old Q-Value + Learning-Rate *
-#               ( Step-Discount + ( Discount-Factor * Future Q-Value ) - Old Q-Value )
-def sarsa_eduardo(node, alpha, gamma):
-
-    future_expected_reward = None
-    while not node.is_terminating():
-
-        # Get Action and Check for Give-up
-        action = node.get_best_action()
-        if action == GIVEUP:
-            node.set_q_value(node.grid.giveup_cost, GIVEUP)
-            break
-
-        reward = node.get_reward()
-        old_q = node.get_q_value(action)
-
-        future_node = move(node, action)  # move(action) to get s'
-        future_q = future_node.get_q_value()  # ARGMAX[Q-Values] to get a'
-
-        new_q_value = old_q + (alpha * (reward + (gamma * future_q) - old_q))
-        future_expected_reward = new_q_value
-
-        node.set_q_value(new_q_value, action)
-        node.set_action(action)
-
-        node = future_node
-
-    return future_expected_reward

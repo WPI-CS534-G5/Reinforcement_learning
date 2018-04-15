@@ -1,9 +1,10 @@
+import node
 import grid as gd
-from node import Node
 from sarsa import sarsa
 from sarsa import sarsa_eduardo
 from sarsa import sarsa_iterative
 from matplotlib import pyplot as plt
+import settings as st
 
 # goal_reward = argv[1]
 # pit_reward = argv[2]
@@ -16,7 +17,7 @@ from matplotlib import pyplot as plt
 goal_reward = 100
 pit_reward = -2
 step_cost = -0.1
-num_iterations = 10000
+num_iterations = 1
 epsilon = 0.1
 giveup_cost = -2
 
@@ -52,21 +53,14 @@ for iteration in range(num_iterations):
 
     # Get a random node
     node = grid.get_rand_node()  # type: Node
-    # point = gd.Point(1, 5)
-    # node = grid.get_node(point)
 
     # Run sarsa() from that node
-    # sarsa(node, alpha, gamma)
-    # sarsa_iterative(node, alpha, gamma)
     reward = sarsa_eduardo(node, alpha, gamma)
+
+    st.print_grid(grid, best_path=False)
+    st.print_grid(grid, best_path=False, view_reward=True)
     grid.clear_actions()
-    # if type(reward) == float:
-    #     rewards.append(reward)
 
-
-    # DEGBUG: print resulting grid
-    # gd.print_grid(grid)
-    # print()
 
 
 # ####### Print out results ####### #
@@ -88,7 +82,7 @@ for iteration in range(num_iterations):
 
 
 # Print Results
-gd.print_grid(grid)
-gd.print_grid(grid, view_reward=True)
+st.print_grid(grid)
+st.print_grid(grid, view_reward=True)
 
 

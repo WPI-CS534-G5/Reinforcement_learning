@@ -1,31 +1,9 @@
 import grid as gd
-from random import random
 from random import randrange
+from settings import UP, DOWN, LEFT, RIGHT, GIVEUP, GOAL, PIT
 
 
 DEBUG = True
-
-# Todo: move these lists into their own module
-# ####### List of possible actions for each state ####### #
-# U: Up
-# D: Down
-# L: Left
-# R: Right
-# S: Stay  --> check for this but should never happen
-# X: Give-up
-UP = 'U'
-DOWN = 'D'
-LEFT = 'L'
-RIGHT = 'R'
-GIVEUP = 'G'
-
-# ####### List of Possible States ####### #
-# G: Goal
-# P: Pit
-# O: Regular
-PIT = 'P'
-GOAL = 'G'
-NORM = 'O'
 
 
 # Todo: Give-up is a possible action so why not add it to Q-Value array?
@@ -93,6 +71,12 @@ class Node(object):
         self.q_values[action] = q_value
 
     def get_q_value(self, action=None, random_value=False):
+        if random_value or not action:
+            actions = list(self.q_values.keys())
+            return self.q_values[actions[randrange(len(actions))]]
+        return self.q_values[action]
+
+    def get_best_q_value(self):
         """
         Gets the Q-Value of the action for this state/node
         If action is not provided, we return the best Q-Value using get_best_action()
@@ -105,15 +89,8 @@ class Node(object):
         if self.is_terminating():
             return self.get_reward()
 
-        if random_value:
-            actions = list(self.q_values.keys())
-            return self.q_values[actions[randrange(len(actions))]]
-
-        if action is None:
-            action = self.get_best_action()
-            return self.q_values[action]
-
-        return self.q_values[action]
+        action = self.get_best_action()
+        return self.get_q_value(action)
 
     def set_action(self, action):
         self.action = action
@@ -123,9 +100,12 @@ class Node(object):
     def get_latest_action(self):
         return self.actions[-1]
 
+    def get_random_action(self):
+        actions = list(self.q_values.keys())
+        r_i = randrange(len(actions))
+        return actions[r_i]
 
-    # Todo: clean this up to make it understandable
-    def get_best_action(self, printing=False):
+    def get_best_actions(self, printing=False):
         """
         Basically ARGMAX(Q-Value), but also return a random action if multiple are the same
         Unless this function is being used for printing out values,
@@ -135,25 +115,17 @@ class Node(object):
         :rtype: str
         """
 
-        #  ####### Check for terminating state ####### #
+        #  Check for terminating state
         if self.is_terminating():
             if printing:
                 print('Running get_action() from terminating state. THIS SHOULDNT BE HAPPENING')
             return self.state
 
-        # ####### Check for random move ####### #
-        if random() <= self.grid.epsilon and not printing:
-            actions = list(self.q_values.keys())
-            r_i = randrange(len(actions))
-            return actions[r_i]
-
-        # ####### Find Best Moves ####### #
-        # Get list of q-values to sort
+        # Get possible moves
         a = list(self.q_values.items())
         actions = list()
         for action, value in a:
             actions.append(tuple([value, action]))
-
 
         # Find best move(s)
         actions.sort(reverse=True)
@@ -164,40 +136,26 @@ class Node(object):
         same_actions = [best]
         for action_tup in actions:  # [ (value, key) ] <--> [ (q-value, action) ]
             if action_tup[0] == best[0]:
-                same_actions.append(action_tup)
+                same_actions.append(action_tup[1])
 
-        if len(same_actions) == 1:
-            return same_actions[0][1]
+        return same_actions
 
-        r_i = randrange(len(same_actions))
-        return same_actions[r_i][1]
+    def get_best_action(self, index=0, random_best=False):
+        """
+        Returns only on best action
+        :param index: index of action (if it exists)
+        :param random_best: whether or not to get a random action from best list
+        :return: action requested from list of best actions
+        """
+        actions = self.get_best_actions()
+        if len(actions) == 1:
+            return actions[0]
+
+        if random_best:
+            return actions[randrange(len(actions))]
+
+        return actions[index]
 
     # Return True if this node is a terminating state
     def is_terminating(self):
         return self.state == GOAL or self.state == PIT
-
-
-# ####### Start of functions non-essential to sarsa ####### #
-# Debug, assignment output, etc
-
-
-# Return printable string of reward value
-def get_print_reward(node):
-    if node.is_terminating():
-        return '{:^5}'.format(node.state)
-
-    reward = node.get_q_value(node.get_best_action(printing=True))
-    if reward < 0:
-        return '{0:2.2f}'.format(reward)
-    else:
-        return '+{0:2.2f}'.format(reward)
-
-def get_debug_reward(node):
-    if node.is_terminating():
-        return '{:^5}'.format(node.state)
-
-    reward = node.get_q_value(node.action)
-    if reward < 0:
-        return '{0:2.2f}'.format(reward)
-    else:
-        return '+{0:2.2f}'.format(reward)

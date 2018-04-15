@@ -1,30 +1,6 @@
 from node import Node
-from node import get_print_reward
-from node import get_debug_reward
 from random import randrange
-
-
-# ####### List of possible actions for each state ####### #
-# U: Up
-# D: Down
-# L: Left
-# R: Right
-# S: Stay  --> check for this but should never happen
-# X: Give-up
-UP = 'U'
-DOWN = 'D'
-LEFT = 'L'
-RIGHT = 'R'
-GIVEUP = 'G'  # Todo: what if we replace this with stay? (e.g. Point.get_direction())
-STAY = 'S'  # is this the same as give-up?
-
-# ####### List of Possible States ####### #
-# G: Goal
-# P: Pit
-# O: Regular
-GOAL = 'G'
-PIT = 'P'
-NORM = 'O'
+from settings import UP, DOWN, LEFT, RIGHT, GIVEUP, GOAL, PIT
 
 
 # Helper object for Grid Class
@@ -202,51 +178,3 @@ class Grid(object):
             point.move(action)
             return self.get_node(point)
         return node
-
-
-# ####### Start of functions non-essential to sarsa ####### #
-# Debug, assignment output, etc
-
-
-# Pretty-Print on command line
-def print_grid(grid, view_reward=False):
-    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': '#', 'P': 'P', 'X': 'G'}
-
-    if not view_reward:
-        print('|---+---+---+---+---+---+---|')
-        for row in grid.grid:
-            p = '| '
-            for node in row:
-                p += act[node.get_best_action()] + ' | '
-            print(p)
-            print('|---+---+---+---+---+---+---|')
-    else:
-        print('|-------+-------+-------+-------+-------+-------+-------|')
-        for row in grid.grid:
-            p = '| '
-            for node in row:
-                p += get_print_reward(node) + ' | '
-            print(p)
-            print('|-------+-------+-------+-------+-------+-------+-------|')
-
-
-# Pretty-Print on command line
-def debug_print(grid, view_reward=False):
-    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': '#', 'P': 'P', 'X': 'G', 'O': 'O'}
-
-    if not view_reward:
-        print('|---+---+---+---+---+---+---|')
-        for row in grid.grid:
-            p = '| '
-            for node in row:
-                p += act[node.action] + ' | '
-            print(p)
-            print('|---+---+---+---+---+---+---|')
-    else:
-        print('|-------+-------+-------+-------+-------+-------+-------|')
-        for row in grid.grid:
-            p = '| '
-            for node in row:
-                p += get_debug_reward() + ' | '
-            print(p)
-            print('|-------+-------+-------+-------+-------+-------+-------|')
