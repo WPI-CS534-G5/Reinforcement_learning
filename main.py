@@ -3,6 +3,7 @@ from node import Node
 from sarsa import sarsa
 from sarsa import sarsa_eduardo
 from sarsa import sarsa_iterative
+from matplotlib import pyplot as plt
 
 # goal_reward = argv[1]
 # pit_reward = argv[2]
@@ -15,8 +16,8 @@ from sarsa import sarsa_iterative
 goal_reward = 5
 pit_reward = -2
 step_cost = -0.1
-num_iterations = 100
-epsilon = 0.4
+num_iterations = 10000
+epsilon = 0.1
 giveup_cost = -2
 
 p = 'P'
@@ -46,22 +47,39 @@ gamma = 0.5  # Discount Factor
 # Initialize the map
 grid = gd.Grid(state_map, goal_reward, pit_reward, step_cost, giveup_cost, epsilon)
 
+rewards = list()
 for iteration in range(num_iterations):
 
     # Get a random node
     node = grid.get_rand_node()  # type: Node
-    # point = gd.Point(2, 1)
+    # point = gd.Point(1, 5)
     # node = grid.get_node(point)
 
     # Run sarsa() from that node
-    last_node = sarsa_eduardo(node, alpha, gamma)
-    if iteration == num_iterations-1:
-        print('{point.row_i}, {point.col_i}'.format(point=last_node.get_point()))
+    reward = sarsa_eduardo(node, alpha, gamma)
+    if type(reward) == float:
+        rewards.append(reward)
 
 
     # DEGBUG: print resulting grid
     # gd.print_grid(grid)
     # print()
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+r = chunks(rewards, 100)
+x = list()
+y = list()
+for index, val in enumerate(r):
+    print(sum(val), index)
+    x.append(index)
+    y.append(sum(val))
+
+plt.scatter(x, y, marker='.')
+plt.show()
 
 
 # Print Results

@@ -136,3 +136,23 @@ def print_grid(grid, view_reward=False):
             print('|-------+-------+-------+-------+-------+-------+-------|')
 
 
+# Pretty-Print on command line
+def debug_print(grid, view_reward=False):
+    act = {'U': '^', 'D': 'v', 'L': '<', 'R': '>', 'G': '#', 'P': 'P', 'X': 'G', 'O': 'O'}
+
+    if not view_reward:
+        print('|---+---+---+---+---+---+---|')
+        for row in grid.grid:
+            p = '| '
+            for node in row:
+                p += act[node.action] + ' | '
+            print(p)
+            print('|---+---+---+---+---+---+---|')
+    else:
+        print('|-------+-------+-------+-------+-------+-------+-------|')
+        for row in grid.grid:
+            p = '| '
+            for node in row:
+                p += node.get_debug_reward() + ' | '
+            print(p)
+            print('|-------+-------+-------+-------+-------+-------+-------|')
