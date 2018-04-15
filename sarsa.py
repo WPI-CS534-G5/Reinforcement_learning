@@ -101,14 +101,14 @@ def sarsa(node, alpha, gamma):
     action = node.get_best_action()
     if action == GIVEUP:
         node.set_action(action)
-        return node.grid.giveup_cost
+        return node.get_reward()
 
     # ####### Calculate Function ####### #
     # Old Estimate
     old_q = node.get_q_value(action)
 
     # Reward for taking a move
-    reward = node.grid.step_cost
+    reward = node.get_reward()
 
     # Q-Value of Future State
     future_node = move(node, action)
@@ -177,7 +177,7 @@ def sarsa_iterative(starting_node, alpha, gamma):
 #               ( Step-Discount + ( Discount-Factor * Future Q-Value ) - Old Q-Value )
 def sarsa_eduardo(node, alpha, gamma):
 
-    reward = None
+    future_expected_reward = None
     while not node.is_terminating():
 
         # Get Action and Check for Give-up
@@ -186,24 +186,18 @@ def sarsa_eduardo(node, alpha, gamma):
             node.set_q_value(node.grid.giveup_cost, GIVEUP)
             break
 
+        reward = node.get_reward()
         old_q = node.get_q_value(action)
 
-        future_node = move(node, action)
-        future_q = future_node.get_q_value()
+        future_node = move(node, action)  # move(action) to get s'
+        future_q = future_node.get_q_value()  # ARGMAX[Q-Values] to get a'
 
-        reward = node.grid.step_cost
         new_q_value = old_q + (alpha * (reward + (gamma * future_q) - old_q))
-        reward = new_q_value
+        future_expected_reward = new_q_value
 
         node.set_q_value(new_q_value, action)
         node.set_action(action)
-        node.state = action
-
-        # point = node.get_point()
-        # print('{point.row_i}, {point.col_i}'.format(point=point))
-        # gd.print_grid(node.grid)
-        # gd.print_grid(node.grid, view_reward=True)
 
         node = future_node
 
-    return reward
+    return future_expected_reward

@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 # epsilon = argv[6]
 
 # 5 -2 -0.1 -3 10000 0.1
-goal_reward = 5
+goal_reward = 100
 pit_reward = -2
 step_cost = -0.1
 num_iterations = 10000
@@ -56,11 +56,12 @@ for iteration in range(num_iterations):
     # node = grid.get_node(point)
 
     # Run sarsa() from that node
+    # sarsa(node, alpha, gamma)
     # sarsa_iterative(node, alpha, gamma)
     reward = sarsa_eduardo(node, alpha, gamma)
     grid.clear_actions()
-    if type(reward) == float:
-        rewards.append(reward)
+    # if type(reward) == float:
+    #     rewards.append(reward)
 
 
     # DEGBUG: print resulting grid

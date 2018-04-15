@@ -28,6 +28,7 @@ GOAL = 'G'
 NORM = 'O'
 
 
+# Todo: Give-up is a possible action so why not add it to Q-Value array?
 class Node(object):
     def __init__(self, grid, row_i, col_i, state):
         """
@@ -122,6 +123,8 @@ class Node(object):
     def get_latest_action(self):
         return self.actions[-1]
 
+
+    # Todo: clean this up to make it understandable
     def get_best_action(self, printing=False):
         """
         Basically ARGMAX(Q-Value), but also return a random action if multiple are the same
@@ -139,34 +142,35 @@ class Node(object):
             return self.state
 
         # ####### Check for random move ####### #
-        if random() <= self.grid.epsilon:
+        if random() <= self.grid.epsilon and not printing:
             actions = list(self.q_values.keys())
-            r_i = randrange(0, len(actions))
+            r_i = randrange(len(actions))
             return actions[r_i]
 
         # ####### Find Best Moves ####### #
-        # Get list of q-values
-        actions = list(self.q_values.items())
-        actions.sort()
+        # Get list of q-values to sort
+        a = list(self.q_values.items())
+        actions = list()
+        for action, value in a:
+            actions.append(tuple([value, action]))
 
-        best = actions.pop(0)
-        best_action = best[0]
-        best_value = best[1]
 
         # Find best move(s)
-        best_actions = [best_action]
-        for action, value in actions:
-            if value == best_value:
-                best_actions.append(action)
+        actions.sort(reverse=True)
+        best = actions.pop()
+        if best[0] < self.grid.giveup_cost:
+            return GIVEUP
 
-        # If >1 best moves, return random action
-        if len(best_actions) == 1:
-            best_action = best_actions[0]
-        else:
-            r_i = randrange(len(best_actions))
-            best_action = best_actions[r_i]
+        same_actions = [best]
+        for action_tup in actions:  # [ (value, key) ] <--> [ (q-value, action) ]
+            if action_tup[0] == best[0]:
+                same_actions.append(action_tup)
 
-        return best_action
+        if len(same_actions) == 1:
+            return same_actions[0][1]
+
+        r_i = randrange(len(same_actions))
+        return same_actions[r_i][1]
 
     # Return True if this node is a terminating state
     def is_terminating(self):
