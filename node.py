@@ -3,6 +3,31 @@ from random import random
 from random import randrange
 
 
+DEBUG = True
+
+# Todo: move these lists into their own module
+# ####### List of possible actions for each state ####### #
+# U: Up
+# D: Down
+# L: Left
+# R: Right
+# S: Stay  --> check for this but should never happen
+# X: Give-up
+UP = 'U'
+DOWN = 'D'
+LEFT = 'L'
+RIGHT = 'R'
+GIVEUP = 'G'
+
+# ####### List of Possible States ####### #
+# G: Goal
+# P: Pit
+# O: Regular
+PIT = 'P'
+GOAL = 'G'
+NORM = 'O'
+
+
 class Node(object):
     def __init__(self, grid, row_i, col_i, state):
         """
@@ -18,71 +43,94 @@ class Node(object):
         :type state: str
         """
 
-        # Grid and Position on it
+        # Grid and self.Position
         self.grid = grid
         self.row_i = row_i
         self.col_i = col_i
 
-        # Recommended action based on Q-Values
-        self.action = ['L', 'R', 'U', 'D', 'X'][randrange(5)]
-
-        # What kind of state is this? (Goal, Pit, Regular)
-        self.state = state
-
-        # (U)p, (D)own, (L)eft, (R)ight, (X)Give-up
-        self.q_values = dict()
-
-        self.init_node()
-        self.init_q_values()
-
-    def init_node(self):
-        # If terminating state, there are no moves
-        if self.is_terminating():
-            self.action = self.state
-
-        # Get Current State and All Actions
-        point = self.get_point()
-        actions = ['L', 'R', 'U', 'D']
-
-        # Add Potential Actions from Current State
-        for action in actions:
-            if self.grid.move_exists(point, action):
-                self.q_values[action] = 0
-
-        # Add Give-Up as Potential Move
-        self.q_values['X'] = self.grid.giveup_cost
-
-    def get_point(self):
-        return gd.Point(self.row_i, self.col_i)
-
-    def get_reward(self):
-        if self.state == 'G':
-            return self.grid.goal_reward
-        elif self.state == 'P':
-            return self.grid.pit_reward
-        elif self.action == 'X':
-            return self.grid.giveup_cost
-        else:
-            return self.grid.step_cost
+        self.action = None      # The latest action taken
+        self.actions = list()   # A list of the actions taken
+        self.q_values = dict()  # One for each action
+        self.state = state      # (Goal, Pit, Normal)
 
     # Todo: come up with clever initialization (manhattan distance from goal/pit?)
     def init_q_values(self):
         return
 
+    # Initialize action, actions, and Q-Values
+    def init_node(self):
+        if self.is_terminating():
+            return
+
+        self.action = None  # No actions taken yet
+
+        # Set Possible Actions and their Q-Values
+        all_actions = [LEFT, RIGHT, UP, DOWN]
+        for action in all_actions:
+            if self.grid.action_exists(self.get_point(), action):
+                self.q_values[action] = 0
+
+    def get_reward(self):
+        """
+        Gets the Reward(a.k.a step-cost) based off the state type
+        :return: reward
+        :rtype: float
+        """
+        if self.state == GOAL:
+            return self.grid.goal_reward
+        elif self.state == PIT:
+            return self.grid.pit_reward
+        elif self.action == GIVEUP:
+            return self.grid.giveup_cost
+        else:
+            return self.grid.step_cost
+
+    def get_point(self):
+        return gd.Point(self.row_i, self.col_i)
+
     def set_q_value(self, q_value, action):
         self.q_values[action] = q_value
 
-    def get_q_value(self, action=None, random=False):
-        if random:
+    def get_q_value(self, action=None, random_value=False):
+        """
+        Gets the Q-Value of the action for this state/node
+        If action is not provided, we return the best Q-Value using get_best_action()
+        If random_value is set, we return a random Q-Value (why? I don't know son)
+        :param action: action to look for
+        :param random_value: whether or not to return a random Q-Value
+        :return: Q-Value based on action
+        :rtype: float
+        """
+        if self.is_terminating():
+            return self.get_reward()
+
+        if random_value:
             actions = list(self.q_values.keys())
             return self.q_values[actions[randrange(len(actions))]]
+
+        if action is None:
+            action = self.get_best_action()
+            return self.q_values[action]
+
         return self.q_values[action]
 
     def set_action(self, action):
         self.action = action
+        self.actions.append(action)
         return
 
-    def get_action(self, printing=False):
+    def get_latest_action(self):
+        return self.actions[-1]
+
+    def get_best_action(self, printing=False):
+        """
+        Basically ARGMAX(Q-Value), but also return a random action if multiple are the same
+        Unless this function is being used for printing out values,
+        we should not be calling this function from a terminating node
+        :param printing: whether or not this is being used to print
+        :return: best action based on Q-Values
+        :rtype: str
+        """
 
         #  ####### Check for terminating state ####### #
         if self.is_terminating():
@@ -118,31 +166,34 @@ class Node(object):
             r_i = randrange(len(best_actions))
             best_action = best_actions[r_i]
 
-        # Update node's action
-        self.action = best_action
         return best_action
 
     # Return True if this node is a terminating state
     def is_terminating(self):
-        return self.state == 'G' or self.state == 'P'
+        return self.state == GOAL or self.state == PIT
 
-    # Return printable string of reward value
-    def get_print_reward(self):
-        if self.is_terminating():
-            return '{:^5}'.format(self.state)
 
-        reward = self.get_q_value(self.get_action(printing=True))
-        if reward < 0:
-            return '{0:2.2f}'.format(reward)
-        else:
-            return '+{0:2.2f}'.format(reward)
+# ####### Start of functions non-essential to sarsa ####### #
+# Debug, assignment output, etc
 
-    def get_debug_reward(self):
-        if self.is_terminating():
-            return '{:^5}'.format(self.state)
 
-        reward = self.get_q_value(self.action)
-        if reward < 0:
-            return '{0:2.2f}'.format(reward)
-        else:
-            return '+{0:2.2f}'.format(reward)
+# Return printable string of reward value
+def get_print_reward(node):
+    if node.is_terminating():
+        return '{:^5}'.format(node.state)
+
+    reward = node.get_q_value(node.get_best_action(printing=True))
+    if reward < 0:
+        return '{0:2.2f}'.format(reward)
+    else:
+        return '+{0:2.2f}'.format(reward)
+
+def get_debug_reward(node):
+    if node.is_terminating():
+        return '{:^5}'.format(node.state)
+
+    reward = node.get_q_value(node.action)
+    if reward < 0:
+        return '{0:2.2f}'.format(reward)
+    else:
+        return '+{0:2.2f}'.format(reward)

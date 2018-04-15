@@ -56,7 +56,9 @@ for iteration in range(num_iterations):
     # node = grid.get_node(point)
 
     # Run sarsa() from that node
+    # sarsa_iterative(node, alpha, gamma)
     reward = sarsa_eduardo(node, alpha, gamma)
+    grid.clear_actions()
     if type(reward) == float:
         rewards.append(reward)
 
@@ -65,21 +67,23 @@ for iteration in range(num_iterations):
     # gd.print_grid(grid)
     # print()
 
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
 
-r = chunks(rewards, 100)
-x = list()
-y = list()
-for index, val in enumerate(r):
-    print(sum(val), index)
-    x.append(index)
-    y.append(sum(val))
-
-plt.scatter(x, y, marker='.')
-plt.show()
+# ####### Print out results ####### #
+# def chunks(l, n):
+#     """Yield successive n-sized chunks from l."""
+#     for i in range(0, len(l), n):
+#         yield l[i:i + n]
+#
+# r = chunks(rewards, 100)
+# x = list()
+# y = list()
+# for index, val in enumerate(r):
+#     print(sum(val), index)
+#     x.append(index)
+#     y.append(sum(val))
+#
+# plt.scatter(x, y, marker='.')
+# plt.show()
 
 
 # Print Results

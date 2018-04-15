@@ -1,5 +1,30 @@
 from node import Node
+from node import get_print_reward
+from node import get_debug_reward
 from random import randrange
+
+
+# ####### List of possible actions for each state ####### #
+# U: Up
+# D: Down
+# L: Left
+# R: Right
+# S: Stay  --> check for this but should never happen
+# X: Give-up
+UP = 'U'
+DOWN = 'D'
+LEFT = 'L'
+RIGHT = 'R'
+GIVEUP = 'G'  # Todo: what if we replace this with stay? (e.g. Point.get_direction())
+STAY = 'S'  # is this the same as give-up?
+
+# ####### List of Possible States ####### #
+# G: Goal
+# P: Pit
+# O: Regular
+GOAL = 'G'
+PIT = 'P'
+NORM = 'O'
 
 
 # Helper object for Grid Class
@@ -8,43 +33,56 @@ class Point(object):
         self.row_i = row_i
         self.col_i = col_i
 
+    # Mutate self
     def move(self, action):
-        if action == 'U':
+        if action == UP:
             self.row_i -= 1
             return True
-        elif action == 'D':
+        elif action == DOWN:
             self.row_i += 1
             return True
-        elif action == 'L':
+        elif action == LEFT:
             self.col_i -= 1
             return True
-        elif action == 'R':
+        elif action == RIGHT:
             self.col_i += 1
             return True
 
-        print('point.move({move}) returned False'.format(move=action))
+        print('Point.move([{point.row_i},{point.col_i}], {action}) got an unexpected action'.format(
+            point=self, action=action))
         return False
 
+    # Return New Point
     def get_move(self, action):
         p = Point(self.row_i, self.col_i)
         p.move(action)
         return p
 
-    # Get direction from self to new point
     def get_direction(self, point):
+        """
+        Get Direction from Self to new Point
+        (Points don't have to be adjacent or even exist to get answer)
+        :param point: Point to get directions to
+        :return: Action
+        :rtype: str
+        """
         row_diff = self.row_i - point.row_i
         if row_diff < 0:
-            return 'R'
+            return RIGHT
         elif row_diff > 0:
-            return 'L'
+            return LEFT
 
         col_diff = self.col_i - point.col_i
         if col_diff < 0:
-            return 'D'
+            return DOWN
         elif col_diff > 0:
-            return 'U'
+            return UP
 
-        print('get_direction({point.row_i},{point.col_i}) returning False'.format(point=point))
+        if col_diff == 0 and row_diff == 0:
+            print('Point.get_direction({point.row_i},{point.col_i}) got same points'.format(point=point))
+            return GIVEUP
+
+        print("Point.get_direction() return false. Please check which universe you are in.")
         return False
 
 
@@ -59,59 +97,115 @@ class Grid(object):
         self.goal_reward = goal_reward
         self.step_cost = step_cost
         self.giveup_cost = giveup_cost
-        self.epsilon = epsilon
+        self.epsilon = epsilon  # exploration factor
 
         # Grid-World Definition
         self.num_rows = len(state_map)
         self.num_cols = len(state_map[0])
-        self.grid = self.init_from_map(state_map)
+        self.grid = self.init_from_list(state_map)
 
-    # Initialize grid-world from state_map
-    def init_from_map(self, matrix):
-        m = list()
+        self.init_nodes()
+
+    def init_nodes(self):
+        for row in self.grid:
+            for node in row:
+                node.init_node()
+
+    def init_from_list(self, matrix):
+        """
+        Initialize grid-world from state-map
+        :param matrix: 2D List of strings representing States
+        :return: 2D List of Nodes
+        :rtype: list
+        """
+        grid = list()
         for row_i, row in enumerate(matrix):
-            new_row = list()
+            grid_row = list()
             for col_i, state in enumerate(row):
-                new_row.append(Node(self, row_i, col_i, state))
-            m.append(new_row)
-        return m
+                grid_row.append(Node(self, row_i, col_i, state))
+            grid.append(grid_row)
+        return grid
+
+    def clear_actions(self):
+        for row in self.grid:
+            for node in row:
+                node.action = None
+                node.actions = list()
 
     def get_node(self, point):
         return self.grid[point.row_i][point.col_i]
 
-    # Returns random coordinate that is not pit or goal state
     def get_rand_node(self):
+        """
+        :return: Random non-terminating Node
+        :rtype: Node
+        """
         rand_row = randrange(0, self.num_rows)
         rand_col = randrange(0, self.num_cols)
-        state = self.grid[rand_row][rand_col].state
+        node = self.grid[rand_row][rand_col]
 
-        if (state == 'P') or (state == 'G'):
+        if node.is_terminating():
             return self.get_rand_node()
 
         return self.grid[rand_row][rand_col]
 
     # Check if move exists
-    def move_exists(self, point, action):
+    def action_exists(self, point, action):
+        """
+        Check if this action is possible for the given point in the grid
+        We return False if called from a terminating state
+        :param point: Position of Node in the Grid
+        :type point: Point
+        :param action: Action to Check
+        :type action: str
+        :rtype: bool
+        """
+        if self.get_node(point).is_terminating():
+            print('action_exists({point.row_i}, {point.col_i}, action) called from terminating state'.format(
+                point=point, action=action
+            ))
+            return False
+
         new_point = point.get_move(action)
 
-        if action == 'U':
+        if action == UP:
             return new_point.row_i >= 0
-        elif action == 'D':
+        elif action == DOWN:
             return new_point.row_i < self.num_rows
-        elif action == 'R':
+        elif action == RIGHT:
             return new_point.col_i < self.num_cols
-        elif action == 'L':
+        elif action == LEFT:
             return new_point.col_i >= 0
+        elif action == GIVEUP:
+            return True
 
-        print('move_exists({0}, {1}) returned False'.format(point, action))
+        print('action_exists({point.row_i}, {point.col_i}, {action}) got unexpected action'.format(
+            point=point, action=action))
         return False
 
     def move(self, node, action):
-        point = node.get_point()
-        if self.move_exists(point, action):
-            point.move(action)
+        """
+        Make a move given a node and and action to take.
+        IF MOVE DOESN'T EXIST, WE RETURN THE SAME NODE. IT IS NOT THIS
+        FUNCTION'S JOB TO CHECK FOR VALIDITY. SAVE IT FOR THE LOGS
 
-        return self.get_node(point)
+        :param node: Node in the Grid
+        :type node: Node
+        :param action: Action to Take
+        :type action: str
+
+        :return: New Node base off old Node and Action taken
+        :rtype: Node
+        """
+        point = node.get_point()
+        if self.action_exists(point, action):
+            point.move(action)
+            return self.get_node(point)
+        return node
+
+
+# ####### Start of functions non-essential to sarsa ####### #
+# Debug, assignment output, etc
 
 
 # Pretty-Print on command line
@@ -123,7 +217,7 @@ def print_grid(grid, view_reward=False):
         for row in grid.grid:
             p = '| '
             for node in row:
-                p += act[node.get_action()] + ' | '
+                p += act[node.get_best_action()] + ' | '
             print(p)
             print('|---+---+---+---+---+---+---|')
     else:
@@ -131,7 +225,7 @@ def print_grid(grid, view_reward=False):
         for row in grid.grid:
             p = '| '
             for node in row:
-                p += node.get_print_reward() + ' | '
+                p += get_print_reward(node) + ' | '
             print(p)
             print('|-------+-------+-------+-------+-------+-------+-------|')
 
@@ -153,6 +247,6 @@ def debug_print(grid, view_reward=False):
         for row in grid.grid:
             p = '| '
             for node in row:
-                p += node.get_debug_reward() + ' | '
+                p += get_debug_reward() + ' | '
             print(p)
             print('|-------+-------+-------+-------+-------+-------+-------|')

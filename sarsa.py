@@ -18,6 +18,9 @@ def move(node, action):
     Move function takes the current node and an action and
     returns the future node using move probabilities
 
+    THIS FUNCTION DOES NOT MUTATE THE CURRENT NODE BUT
+    INSTEAD RETURNS A NEW NODE
+
     :param node: Current Node
     :type node: Node
     :param action: Action to take
@@ -46,6 +49,8 @@ def move(node, action):
     # Moves double: (0.9, 1]
     else:
         new_node = grid.move(node, action)
+        if new_node.is_terminating():
+            return new_node
         new_node = grid.move(new_node, action)
 
     return new_node
@@ -93,7 +98,7 @@ def sarsa(node, alpha, gamma):
         return node.get_reward()
 
     # Get action and Check give-up
-    action = node.get_action()
+    action = node.get_best_action()
     if action == GIVEUP:
         node.set_action(action)
         return node.grid.giveup_cost
@@ -117,9 +122,9 @@ def sarsa(node, alpha, gamma):
     node.set_action(action)
     return new_q_value
 
+
 def sarsa_iterative(starting_node, alpha, gamma):
     """
-
     :param grid: Our Grid-World
     :type grid: gd.Grid
 
@@ -140,7 +145,7 @@ def sarsa_iterative(starting_node, alpha, gamma):
     while not node.is_terminating():
 
         # Get action and Check give-up
-        action = node.get_action()
+        action = node.get_best_action()
         actions.append(action)
         if action == GIVEUP:
             node.action = GIVEUP
@@ -176,14 +181,15 @@ def sarsa_eduardo(node, alpha, gamma):
     while not node.is_terminating():
 
         # Get Action and Check for Give-up
-        action = node.get_action()
+        action = node.get_best_action()
         if action == GIVEUP:
             node.set_q_value(node.grid.giveup_cost, GIVEUP)
             break
 
         old_q = node.get_q_value(action)
+
         future_node = move(node, action)
-        future_q = future_node.get_q_value(random=True)
+        future_q = future_node.get_q_value()
 
         reward = node.grid.step_cost
         new_q_value = old_q + (alpha * (reward + (gamma * future_q) - old_q))
@@ -201,4 +207,3 @@ def sarsa_eduardo(node, alpha, gamma):
         node = future_node
 
     return reward
-''
