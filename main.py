@@ -1,23 +1,17 @@
+from sys import argv
 import settings as st
 from grid import Grid
 from grid import Point
 from sarsa import sarsa_eduardo
 from matplotlib import pyplot as plt
 
-# goal_reward = argv[1]
-# pit_reward = argv[2]
-# step_cost = argv[3]
-# giveup_cost = argv[4]
-# trials = argv[5]
-# epsilon = argv[6]
-
 # 5 -2 -0.1 -3 10000 0.1
-goal_reward = 5
-pit_reward = -2
-step_cost = -0.1
-num_iterations = 100
-epsilon = 0
-giveup_cost = -4
+goal_reward = float(argv[1])
+pit_reward = float(argv[2])
+step_cost = float(argv[3])
+giveup_cost = float(argv[4])
+num_iterations = int(argv[5])
+epsilon = float(argv[6])
 
 p = st.PIT
 g = st.GOAL
@@ -60,10 +54,6 @@ for iteration in range(1, num_iterations+1):
     # reward = sarsa_iterative(node, alpha, gamma)
     average_rewards.append(reward)
     average_q_values.append(grid.get_average_reward())
-
-    print(f'{iteration}, ')
-    if iteration % 10 == 0:
-        print()
 
 
 # ####### Print out results ####### #
