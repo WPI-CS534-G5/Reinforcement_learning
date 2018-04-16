@@ -92,7 +92,8 @@ def sarsa_eduardo(node, alpha, gamma):
         node.set_q_value(new_q, action)
         node = node_prime
 
-    return sum(future_expected_rewards) / len(future_expected_rewards)
+    future_expected_rewards.append(node.get_reward())
+    return sum(future_expected_rewards)
 
 
 #
