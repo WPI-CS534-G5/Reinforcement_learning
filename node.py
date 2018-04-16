@@ -6,7 +6,6 @@ from settings import UP, DOWN, LEFT, RIGHT, GIVEUP, GOAL, PIT, NORM
 DEBUG = True
 
 
-# Todo: Give-up is a possible action so why not add it to Q-Value array?
 class Node(object):
     def __init__(self, grid, row_i, col_i, state):
         """
@@ -36,18 +35,21 @@ class Node(object):
     def init_q_values(self):
         return
 
-    # Initialize action, actions, and Q-Values
-    def init_node(self):
+    def init_node(self):     # Initialize action, actions, and Q-Values
         if self.is_terminating():
             return
 
         self.action = self.state  # No actions taken yet
 
         # Set Possible Actions and their Q-Values
-        all_actions = [LEFT, RIGHT, UP, DOWN]
+        all_actions = [LEFT, RIGHT, UP, DOWN, GIVEUP]
         for action in all_actions:
             if self.grid.action_exists(self.get_point(), action):
                 self.q_values[action] = 0
+        self.q_values[GIVEUP] = self.grid.giveup_cost
+
+    def get_point(self):
+        return gd.Point(self.row_i, self.col_i)
 
     def get_reward(self):
         """
@@ -64,24 +66,11 @@ class Node(object):
         else:
             return self.grid.step_cost
 
-    def get_point(self):
-        return gd.Point(self.row_i, self.col_i)
-
-    def set_q_value(self, q_value, action):
-        self.q_values[action] = q_value
-
+    # ####### ######## ####### ######### ######## ####### #
+    # ####### ######## Q-VALUE FUNCTIONS ######## ####### #
+    # ####### ######## ####### ######### ######## ####### #
+    # These functions are used to acquire q-values in specific ways
     def get_q_value(self, action=None, random_value=False):
-        if self.is_terminating():
-            return self.get_reward()
-        if action == self.state:
-            return 0
-        if random_value or not action:
-            actions = list(self.q_values.keys())
-            return self.q_values[actions[randrange(len(actions))]]
-
-        return self.q_values[action]
-
-    def get_best_q_value(self):
         """
         Gets the Q-Value of the action for this state/node
         If action is not provided, we return the best Q-Value using get_best_action()
@@ -93,15 +82,28 @@ class Node(object):
         """
         if self.is_terminating():
             return self.get_reward()
+        if action == self.state:
+            return 0
+        if random_value or not action:
+            actions = list(self.q_values.keys())
+            return self.q_values[actions[randrange(len(actions))]]
+
+        return self.q_values[action]
+
+    def get_best_q_value(self):
+        if self.is_terminating():
+            return self.get_reward()
 
         action = self.get_best_action()
         return self.get_q_value(action)
 
-    def set_action(self, action):
-        self.action = action
-        self.actions.append(action)
-        return
+    def set_q_value(self, q_value, action):
+        self.q_values[action] = q_value
 
+    # ####### ######## ###### ######### ######## ####### #
+    # ####### ######## ACTION FUNCTIONS ######## ####### #
+    # ####### ######## ###### ######### ######## ####### #
+    # These functions are used to acquire actions in specific ways
     def get_latest_action(self):
         return self.actions[-1]
 
@@ -109,6 +111,17 @@ class Node(object):
         actions = list(self.q_values.keys())
         r_i = randrange(len(actions))
         return actions[r_i]
+
+    def get_best_action(self, random_best=False):
+        """
+        Returns only one best action
+        :param random_best: whether or not to get a random action from best list
+        :return: action requested from list of best actions
+        """
+        actions = self.get_best_actions()
+        if len(actions) == 1 or not random_best:
+            return actions[0]
+        return actions[randrange(len(actions))]
 
     def get_best_actions(self, printing=False):
         """
@@ -134,7 +147,7 @@ class Node(object):
 
         # Find best move(s)
         actions.sort(reverse=True)
-        best = actions.pop()
+        best = actions.pop(0)
         if best[0] < self.grid.giveup_cost:
             return GIVEUP
 
@@ -146,22 +159,10 @@ class Node(object):
         # print(same_actions)
         return same_actions
 
-    def get_best_action(self, index=0, random_best=False):
-        """
-        Returns only on best action
-        :param index: index of action (if it exists)
-        :param random_best: whether or not to get a random action from best list
-        :return: action requested from list of best actions
-        """
-        actions = self.get_best_actions()
-        if len(actions) == 1:
-            return actions[0]
+    def set_action(self, action):
+        self.action = action
+        self.actions.append(action)
+        return
 
-        if random_best:
-            return actions[randrange(len(actions))]
-
-        return actions[index]
-
-    # Return True if this node is a terminating state
     def is_terminating(self):
         return self.state == GOAL or self.state == PIT

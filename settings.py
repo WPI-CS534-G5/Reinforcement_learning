@@ -1,3 +1,7 @@
+NODE_DEBUG = 1
+GRID_DEBUG = 1
+SARSA_DEBUG = 0
+
 # ####### List of possible actions for each state ####### #
 # U: Up
 # D: Down
@@ -9,7 +13,7 @@ UP = 'U'
 DOWN = 'D'
 LEFT = 'L'
 RIGHT = 'R'
-GIVEUP = 'G'
+GIVEUP = 'X'
 
 # ####### List of Possible States ####### #
 # G: Goal

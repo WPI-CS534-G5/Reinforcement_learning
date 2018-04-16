@@ -1,6 +1,7 @@
 from node import Node
 from random import randrange
 from settings import UP, DOWN, LEFT, RIGHT, GIVEUP
+from settings import GRID_DEBUG as DEBUG
 
 
 # Helper object for Grid Class
@@ -24,8 +25,9 @@ class Point(object):
             self.col_i += 1
             return True
 
-        print('Point.move([{point.row_i},{point.col_i}], {action}) got an unexpected action'.format(
-            point=self, action=action))
+        if DEBUG:
+            print('Point.move([{point.row_i},{point.col_i}], {action}) got an unexpected action'.format(
+                point=self, action=action))
         return False
 
     # Return New Point
@@ -54,11 +56,12 @@ class Point(object):
         elif col_diff > 0:
             return UP
 
-        if col_diff == 0 and row_diff == 0:
+        if col_diff == 0 and row_diff == 0 and DEBUG:
             print('Point.get_direction({point.row_i},{point.col_i}) got same points'.format(point=point))
             return GIVEUP
 
-        print("Point.get_direction() return false. Please check which universe you are in.")
+        if DEBUG:
+            print("Point.get_direction() return false. Please check which universe you are in.")
         return False
 
 
@@ -141,7 +144,8 @@ class Grid(object):
                 point=point, action=action
             ))
             return False
-
+        if action == GIVEUP:
+            return True
         new_point = point.get_move(action)
 
         if action == UP:
@@ -152,11 +156,10 @@ class Grid(object):
             return new_point.col_i < self.num_cols
         elif action == LEFT:
             return new_point.col_i >= 0
-        elif action == GIVEUP:
-            return True
 
-        print('action_exists({point.row_i}, {point.col_i}, {action}) got unexpected action'.format(
-            point=point, action=action))
+        if DEBUG:
+            print('action_exists({point.row_i}, {point.col_i}, {action}) got unexpected action'.format(
+                point=point, action=action))
         return False
 
     def move(self, node, action):

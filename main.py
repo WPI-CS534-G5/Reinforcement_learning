@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 goal_reward = 100
 pit_reward = -2
 step_cost = -0.1
-num_iterations = 1
+num_iterations = 10000
 epsilon = 0.1
 giveup_cost = -2
 
@@ -56,14 +56,13 @@ for iteration in range(num_iterations):
     # Get a random node
     node = grid.get_rand_node()  # type: Node
     point = node.get_point()  # type: Point
-    print(f'start(row,col): ({point.row_i}, {point.col_i})')
+    # print(f'start(row,col): ({point.row_i}, {point.col_i})')
 
     # Run sarsa() from that node
     reward = sarsa_eduardo(node, alpha, gamma)
-    st.print_grid(grid, best_path=False)
-    st.print_grid(grid, best_path=False, view_reward=True)
+    # st.print_grid(grid, best_path=False)
+    # st.print_grid(grid, best_path=False, view_reward=True)
     grid.clear_actions()
-
 
 
 # ####### Print out results ####### #
@@ -85,6 +84,6 @@ for iteration in range(num_iterations):
 
 # st.print_grid(grid, best_path=False)
 # st.print_grid(grid, best_path=False, view_reward=True)
-# st.print_grid(grid, best_path=True)
-# st.print_grid(grid, best_path=True, view_reward=True)
+st.print_grid(grid, best_path=True)
+st.print_grid(grid, best_path=True, view_reward=True)
 
