@@ -69,45 +69,30 @@ def get_prime(node, action):
 #               ( Step-Discount + ( Discount-Factor * Future Q-Value ) - Old Q-Value )
 def sarsa_eduardo(node, alpha, gamma):
 
-    actions = list()
-    actual_actions = list()
     future_expected_rewards = list()
     while not node.is_terminating():
 
         # Get Action and Check for Give-up
         action = get_action(node)
         node.set_action(action)
-        actions.append(action)
         if action == GIVEUP:
-            new_q = node.get_reward()
-            node.set_q_value(new_q, action)
+            reward = node.get_reward()
+            node.set_q_value(reward, action)
+            future_expected_rewards.append(reward)
             break
 
         # ####### Q-Function ####### #
         q = node.get_q_value(action)                            # Old Estimate
         reward = node.get_reward()                              # Reward for taking move
+        future_expected_rewards.append(reward)
         node_prime, q_prime = get_prime(node, action)           # Q-Value of Future State
         new_q = q + (alpha * (reward + (gamma * q_prime) - q))  # Calculate new Q-Value
-
-        #
-        # ####### DEBUG STATEMENTS ####### #
-        if DEBUG:
-            future_expected_rewards.append(new_q)
-            point_start = node.get_point()
-            point_end = node_prime.get_point()
-            a = point_start.get_direction(point_end)
-            actual_actions.append(a)
-        # ####### DEBUG STATEMENTS ####### #
-        #
 
         # ####### Update Node and Set Node ####### #
         node.set_q_value(new_q, action)
         node = node_prime
 
-    if DEBUG:
-        print('Intended Actions: ', actions)
-        print('Actual Actions:   ', actual_actions)
-    return future_expected_rewards
+    return sum(future_expected_rewards) / len(future_expected_rewards)
 
 
 #
@@ -167,10 +152,9 @@ def sarsa(node, alpha, gamma):
 
     # Get action and Check give-up
     action = get_action(node)
+    node.set_action(action)
     if action == GIVEUP:
-        reward = node.grid.giveup_cost
-        update_node(node, reward, GIVEUP)
-        return reward
+        return node.get_reward()
 
     # ####### Calculate Function ####### #
     q = node.get_q_value(action)                            # Old Estimate
@@ -179,7 +163,7 @@ def sarsa(node, alpha, gamma):
     new_q = q + (alpha * (reward + (gamma * q_prime) - q))  # Calculate new Q-Value
 
     # Update Node and return Updated Estimate
-    update_node(node, new_q, action)
+    node.set_q_value(new_q, action)
 
     return new_q
 

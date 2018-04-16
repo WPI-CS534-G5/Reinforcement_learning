@@ -161,7 +161,7 @@ class Node(object):
 
     def set_action(self, action):
         self.action = action
-        self.actions.append(action)
+        # self.actions.append(action)
         return
 
     def is_terminating(self):

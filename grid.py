@@ -181,3 +181,14 @@ class Grid(object):
             point.move(action)
             return self.get_node(point)
         return node
+
+    def get_average_reward(self):
+        total = 0
+        for row in self.grid:
+            for node in row:
+                for key, value in node.q_values.items():
+                    total += value
+        return total / 42
+
+
+
