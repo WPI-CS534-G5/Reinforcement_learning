@@ -53,6 +53,7 @@ def get_print_action(node, best=True):
     return act[node.action]
 
 
+# Todo: Print variable sized reward grid
 # Pretty-Print on command line
 def print_grid(grid, best_path=True, view_reward=False):
     """

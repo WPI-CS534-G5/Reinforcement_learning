@@ -193,5 +193,3 @@ class Grid(object):
                         count += 1
         return total / count
 
-
-

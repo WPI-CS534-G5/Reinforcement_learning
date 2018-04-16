@@ -1,8 +1,8 @@
 import grid as gd
 from node import Node
 from random import random
-from settings import UP, DOWN, LEFT, RIGHT, GIVEUP
 from settings import SARSA_DEBUG as DEBUG
+from settings import UP, DOWN, LEFT, RIGHT, GIVEUP
 
 # Map Direction to 90-degrees right direction
 n_right = {UP: 'R', RIGHT: 'D', DOWN: 'L', LEFT: 'U'}
