@@ -184,11 +184,14 @@ class Grid(object):
 
     def get_average_reward(self):
         total = 0
+        count = 0
         for row in self.grid:
             for node in row:
                 for key, value in node.q_values.items():
-                    total += value
-        return total / 42
+                    if key != GIVEUP:
+                        total += value
+                        count += 1
+        return total / count
 
 
 

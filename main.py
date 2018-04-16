@@ -19,9 +19,9 @@ from matplotlib import pyplot as plt
 goal_reward = 5
 pit_reward = -4
 step_cost = -1
-num_iterations = 200
-epsilon = 0
-giveup_cost = -3
+num_iterations = 1000
+epsilon = 0.1
+giveup_cost = -2
 
 p = st.PIT
 g = st.GOAL
@@ -70,6 +70,9 @@ print()
 # ####### Print out results ####### #
 x = [i for i, v in enumerate(average_rewards)]
 plt.scatter(x, average_rewards, marker='.')
+plt.title('Average Obtained Reward per Iteration')
+plt.xlabel('Average Q-Value')
+plt.ylabel('Trial #')
 plt.show()
 
 # st.print_grid(grid, best_path=False)
